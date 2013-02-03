@@ -39,7 +39,7 @@ static int __init timer_init(void)
   cfq_tot_start = (cfq_high_start << 32) | cfq_low_start;
   cfq_tot_end = (cfq_high_end << 32) | cfq_low_end;
 
-  clock_freq = cfq_tot_end / cfq_tot_start;
+  clock_freq = cfq_tot_end - cfq_tot_start;
 
   __asm__ __volatile("cli \n\t"
 		     "cpuid \n\t"
@@ -66,7 +66,7 @@ static int __init timer_init(void)
   tot_end = (timer_high_end << 32) | timer_low_end;
 
   printk (KERN_ALERT "Starting timer module");
-  printk (KERN_ALERT "Clock frequency = %f", clock_freq);
+  printk (KERN_ALERT "Clock frequency = %lf", clock_freq);
   printk (KERN_ALERT "Total time spent on for loop: %11lu", (tot_end - tot_start));
 
   return 0;
