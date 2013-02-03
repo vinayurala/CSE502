@@ -8,8 +8,6 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/preempt.h>
-#include <linux/sched.h>
-#include <linux/hardirq.h>
 
 static int __init timer_init(void)
 {
@@ -22,7 +20,6 @@ static int __init timer_init(void)
   int y;
 
   preempt_disable();
-  // raw_local_irq_save(flags);
 
   __asm__ __volatile("cli \n\t"
 		     "cpuid \n\t"
@@ -63,7 +60,6 @@ static int __init timer_init(void)
 		     : "=r"(timer_high_end), "=r"(timer_low_end)
 		     :: "%rax", "%rbx", "%rcx", "%rdx");
 
-  // raw_local_irq_restore(flags);
   preempt_enable();
 
   tot_start = (timer_high_start << 32) | timer_low_start;
