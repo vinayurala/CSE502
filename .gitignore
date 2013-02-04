@@ -1,4 +1,7 @@
 hello*
 a.out
 modules.order
-Module.symvers	
+Module.symvers
+.hw1*
+hw1.mod.*
+.tmp_versions/*	
