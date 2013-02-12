@@ -4,3 +4,4 @@ modules.order
 Module.symvers
 .hw1*
 hw1.mod.*
+scratch*
