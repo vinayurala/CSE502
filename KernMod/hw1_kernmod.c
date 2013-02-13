@@ -10,14 +10,13 @@
 #include <linux/preempt.h>
 #include <linux/hardirq.h>
 
-#define RUN_COUNT 9
+#define RUN_COUNT 8
 #define BILLION 1E9
 
 static int __init timer_init(void)
 {
   unsigned long long timer_high_start[5], timer_high_end[5], timer_low_start[5], timer_low_end[5];
   unsigned long long tot_start[5], tot_end[5];
-  unsigned long mask = 1;
   float clock_freq;
   double tot_time[5];
   volatile int x = 0;
