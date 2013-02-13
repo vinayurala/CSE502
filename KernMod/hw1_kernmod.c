@@ -10,7 +10,7 @@
 #include <linux/preempt.h>
 #include <linux/hardirq.h>
 
-#define RUN_COUNT 8
+#define RUN_COUNT 7 //for RUN_COUNT >= 8, things go haywire
 #define BILLION 1E9
 
 static int __init timer_init(void)
