@@ -71,28 +71,40 @@ void print(int size)
 void cache_sizes()
 {
   int res[2];
-
-  L1.level = 1;
-  L2.level = 2;
-  L3.level = 3;
-
-  run_cpuid(L1.level, &res[0], &res[1]);
-  populate_cache_struct(&L1, res);
-
-  run_cpuid(L2.level, &res[0], &res[1]);
-  populate_cache_struct(&L2, res);
-
-  run_cpuid(L3.level, &res[0], &res[1]);
-  populate_cache_struct(&L3, res);
+  int level = 1, flag = 1;
 
   printf("\nCaches: ");
+  
+  run_cpuid(level, &res[0], &res[1]);
+  if(!(res[0] & res[1]))
+    goto end;
+
+  L1.level = level;
+  populate_cache_struct(&L1, res);
   printf("%d/%dX%d", L1.blk_size, L1.num_sets, L1.assoc);
   print(L1.size);
+  level++;      
+  
+  run_cpuid(level, &res[0], &res[1]);
+  if(!(res[0] & res[1]))
+    goto end;
+
+  L2.level = level;
+  populate_cache_struct(&L2, res);
   printf("%d/%dX%d", L2.blk_size, L2.num_sets, L2.assoc);
   print(L2.size);
+  level++;
+  
+  run_cpuid(level, &res[0], &res[1]);
+  if(!(res[0] & res[1]))
+    goto end;
+
+  L3.level = level;
+  populate_cache_struct(&L3, res);
   printf("%d/%dX%d", L3.blk_size, L3.num_sets, L3.assoc);
   print(L3.size);
 
+ end:
   printf("\n");
 }
 
