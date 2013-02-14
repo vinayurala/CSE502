@@ -11,13 +11,11 @@ volatile int x = 0;
 
 int main()
 {
-  /* clock_t start, end; */
   struct timespec start, end;
   int y, i, rc = RUNCOUNT;
   float tot_time;
   unsigned long mask = 1;
 
-  /* start = clock(); */
   i = 0;
 
   sched_setaffinity(0, sizeof(mask), &mask);
@@ -28,7 +26,6 @@ int main()
   for(y = 0; y < 1234567890; y++)
     ++x;
   
-  // end = clock();
   clock_gettime(CLOCK_MONOTONIC_RAW, &end);
   
   i++; rc--;
