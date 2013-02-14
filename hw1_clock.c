@@ -12,11 +12,9 @@ volatile int x = 0;
 int main()
 {
   struct timespec start, end;
-  int y, i, rc = RUNCOUNT;
+  int y, i;
   float tot_time;
   unsigned long mask = 1;
-
-  i = 0;
 
   sched_setaffinity(0, sizeof(mask), &mask);
   setpriority(PRIO_PROCESS, 0, -20);
@@ -28,10 +26,8 @@ int main()
   
   clock_gettime(CLOCK_MONOTONIC_RAW, &end);
   
-  i++; rc--;
-  
   tot_time = (end.tv_sec-start.tv_sec) * BILLION + (end.tv_nsec - start.tv_nsec);
-  printf("\nTime taken = %-10.2f ns: ", tot_time);
+  printf("\n%d Loop = %-10.2f ns", y, tot_time);
   
   printf("\n");
   return 0;
