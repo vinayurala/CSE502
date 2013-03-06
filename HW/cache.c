@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/resource.h>
 
 #define BILLION 1E9
 #define KB 1024
@@ -28,9 +29,7 @@ void run_cpuid(int level, int *reg_ebx, int *reg_ecx)
   int res[2];
 
   __asm __volatile("cpuid \n\t"					\
-		   "movl %%ebx, %0 \n\t"			\
-		   "movl %%ecx, %1 \n\t"			\
-		   : "=r"(res[0]), "=r"(res[1])			\
+		   : "=b"(res[0]), "=c"(res[1])			\
 		   : "c"(level), "a"(4));		
 
   *reg_ebx = res[0];
@@ -115,20 +114,30 @@ void calc_latencies()
   int lengthmod = (KB * KB) - 1;
   int i,j;
   unsigned int k;
+  int sizes[3] = {L1.size, L2.size, L3.size};
+  int *arr = (int *)malloc(L1.size/sizeof(int));
+  unsigned long high_start, low_start, high_end, low_end;
+  float cpu_freq = 1.728938;
+  unsigned long dry_run_time;
 
-  int arr[KB * KB];
-  int steps[3] = {L1.size, L2.size, L3.size};
+  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
-  for(i = 0; i < 3; i++)
-    {
-      clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-      for(j = 0; j < steps[i]; j++)
-	arr[(j * 16) & lengthmod]++;
-      clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-      
-      tot_time = (end.tv_nsec - start.tv_nsec);
-      printf("\nTime taken = %lu ns", (unsigned long long)tot_time);
-    }
+  dry_run_time = end.tv_nsec - start.tv_nsec;
+  printf("\n%lu", dry_run_time);
+
+  // Flush the cache, and fill cache with arr
+  memset((void *)arr, 1, sizeof(arr));
+
+  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+  arr[(L1.size -1) / sizeof(int)]++;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+
+  tot_time = end.tv_nsec - start.tv_nsec;
+  printf("\nRaw run time: %.0f", tot_time);
+  tot_time -= dry_run_time;
+
+  printf("\nTime taken = %.0f ns", tot_time);
  
 }
 
@@ -138,6 +147,10 @@ int main()
   int num_accesses;
   register int *a, *b,i, num_iter = 1024, k, l;
   float tot_time;
+  unsigned long mask = 2;
+
+  sched_setaffinity(0, sizeof(mask), &mask);
+  setpriority(PRIO_PROCESS, 0, -20);
 
   cache_sizes();
   
