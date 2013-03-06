@@ -1,0 +1,6 @@
+Project selected:  1 Port,Set-associative,16KB
+
+All of the implementation is in cache.h. There is no cache.cpp.
+Assumptions: Cache under construction. It may be insanely slow (slower than you think! No a lot slower than that). Please bear with us. :D
+
+Copyright © 2013 by (Amogh Akshintala, Vinay Krishnamurthy, Prankur Gupta, Sudhir Kasanavesi, Vinay Kumar Rai, Sivaranjini Dharmalingam, Vidhya Ramanathan). This work is licensed under GPLv3, details in accompanying COPYING file.

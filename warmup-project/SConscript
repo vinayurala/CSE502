@@ -1,0 +1,30 @@
+# SConscript for plugins subdirectory
+
+# Import envrionment
+try:
+	Import('ptl_env')
+	env = ptl_env
+except:
+    print("Plugin directory can't get base environment")
+    exit(0)
+
+import os
+from subprocess import call
+
+#env['CPPPATH'].append("/scratch/mferdman/sysc-install/include")
+env['CPPPATH'].append("/usr/local/systemc230/include")
+
+
+# Get list of .cpp files
+src_files = Glob('*.cpp')
+
+hwlib = env.SharedLibrary(target='hwlib', source=src_files)
+
+testbench = env.Clone();
+#testbench.Append(LINKFLAGS = "-Wl,-rpath=/scratch/mferdman/sysc-install/lib-linux64 -L/scratch/mferdman/sysc-install/lib-linux64 -lsystemc")
+testbench.Append(LINKFLAGS = "-Wl,-rpath=/usr/local/systemc230/lib-linux64 -L/usr/local/systemc230/lib-linux64 -lsystemc")
+testbench.Append(LINKFLAGS = "-Wl,-rpath=%s -L%s -lhwlib" % (os.getcwd(),os.getcwd()))
+tb = testbench.Program(target = "testbench", source = ["testbench.c"]);
+testbench.Depends(tb, hwlib)
+
+Return('hwlib')
