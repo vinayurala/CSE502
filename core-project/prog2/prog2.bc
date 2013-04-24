@@ -1,0 +1,671 @@
+; ModuleID = 'prog2.c'
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
+target triple = "x86_64-unknown-linux-gnu"
+
+@size = common global i64 0, align 8
+@powers = common global i64* null, align 8
+@term = common global i64* null, align 8
+@pi = common global i64* null, align 8
+@.str = private unnamed_addr constant [81 x i8] c"Syntax: ./prog2 <number>   - <number> indicates the number of digits to compute\0A\00", align 1
+@.str1 = private unnamed_addr constant [34 x i8] c"Invalid argument - need <number>\0A\00", align 1
+@.str2 = private unnamed_addr constant [35 x i8] c"Unable to allocate enough memory.\0A\00", align 1
+@.str3 = private unnamed_addr constant [18 x i8] c"Calculation time \00", align 1
+@.str4 = private unnamed_addr constant [9 x i8] c" cycles\0A\00", align 1
+
+define void @OutDig(i64 %dig) nounwind uwtable noimplicitfloat {
+entry:
+  tail call void @llvm.dbg.value(metadata !{i64 %dig}, i64 0, metadata !13), !dbg !86
+  %add = add nsw i64 %dig, 48, !dbg !87
+  %call = tail call i64 @putchar(i64 %add) nounwind noimplicitfloat, !dbg !87
+  ret void, !dbg !89
+}
+
+declare i64 @putchar(i64) nounwind noimplicitfloat
+
+define void @PrintVal(i64 %val) nounwind uwtable noimplicitfloat {
+entry:
+  tail call void @llvm.dbg.value(metadata !{i64 %val}, i64 0, metadata !17), !dbg !90
+  %cmp = icmp sgt i64 %val, 9, !dbg !91
+  br i1 %cmp, label %if.then, label %if.end, !dbg !91
+
+if.then:                                          ; preds = %entry
+  %div = sdiv i64 %val, 10, !dbg !91
+  tail call void @PrintVal(i64 %div) noimplicitfloat, !dbg !91
+  br label %if.end, !dbg !91
+
+if.end:                                           ; preds = %if.then, %entry
+  %rem = srem i64 %val, 10, !dbg !93
+  tail call void @llvm.dbg.value(metadata !{i64 %rem}, i64 0, metadata !94) nounwind, !dbg !95
+  %add.i = add nsw i64 %rem, 48, !dbg !96
+  %call.i = tail call i64 @putchar(i64 %add.i) nounwind noimplicitfloat, !dbg !96
+  ret void, !dbg !97
+}
+
+define void @PrintShort(i64 %num) nounwind uwtable noimplicitfloat {
+entry:
+  call void @llvm.dbg.value(metadata !{i64 %num}, i64 0, metadata !24), !dbg !98
+  call void @llvm.dbg.value(metadata !99, i64 0, metadata !25), !dbg !100
+  %rem = srem i64 %num, 10, !dbg !102
+  %div = sdiv i64 %num, 10, !dbg !104
+  call void @llvm.dbg.value(metadata !{i64 %div}, i64 0, metadata !24), !dbg !104
+  call void @llvm.dbg.value(metadata !105, i64 0, metadata !25), !dbg !100
+  %rem.1 = srem i64 %div, 10, !dbg !102
+  call void @llvm.dbg.value(metadata !{i64 %div}, i64 0, metadata !24), !dbg !104
+  call void @llvm.dbg.value(metadata !105, i64 0, metadata !25), !dbg !100
+  call void @llvm.dbg.value(metadata !{i64 %rem.1}, i64 0, metadata !106) nounwind, !dbg !109
+  %add.i = add nsw i64 %rem.1, 48, !dbg !110
+  %call.i = call i64 @putchar(i64 %add.i) nounwind noimplicitfloat, !dbg !110
+  call void @llvm.dbg.value(metadata !99, i64 0, metadata !25), !dbg !111
+  call void @llvm.dbg.value(metadata !{i64 %rem.1}, i64 0, metadata !106) nounwind, !dbg !109
+  %add.i.1 = add nsw i64 %rem, 48, !dbg !110
+  %call.i.1 = call i64 @putchar(i64 %add.i.1) nounwind noimplicitfloat, !dbg !110
+  call void @llvm.dbg.value(metadata !99, i64 0, metadata !25), !dbg !111
+  ret void, !dbg !112
+}
+
+define void @Print(i64* nocapture %num) nounwind uwtable noimplicitfloat {
+entry:
+  tail call void @llvm.dbg.value(metadata !{i64* %num}, i64 0, metadata !37), !dbg !113
+  %call = tail call i64 @putchar(i64 51) nounwind noimplicitfloat, !dbg !114
+  %call1 = tail call i64 @putchar(i64 46) nounwind noimplicitfloat, !dbg !115
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !38), !dbg !116
+  %0 = load i64* @size, align 8, !dbg !116, !tbaa !118
+  %cmp5 = icmp sgt i64 %0, 1, !dbg !116
+  br i1 %cmp5, label %for.body, label %for.end, !dbg !116
+
+for.body:                                         ; preds = %entry, %for.body
+  %x.06 = phi i64 [ %inc, %for.body ], [ 1, %entry ]
+  %arrayidx = getelementptr inbounds i64* %num, i64 %x.06, !dbg !121
+  %1 = load i64* %arrayidx, align 8, !dbg !121, !tbaa !118
+  tail call void @llvm.dbg.value(metadata !{i64 %1}, i64 0, metadata !122) nounwind, !dbg !123
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !124) nounwind, !dbg !125
+  %rem.i = srem i64 %1, 10, !dbg !126
+  %div.i = sdiv i64 %1, 10, !dbg !127
+  tail call void @llvm.dbg.value(metadata !{i64 %div.i}, i64 0, metadata !122) nounwind, !dbg !127
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !124) nounwind, !dbg !125
+  %rem.1.i = srem i64 %div.i, 10, !dbg !126
+  tail call void @llvm.dbg.value(metadata !{i64 %div.i}, i64 0, metadata !122) nounwind, !dbg !127
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !124) nounwind, !dbg !125
+  tail call void @llvm.dbg.value(metadata !{i64 %rem.1.i}, i64 0, metadata !128) nounwind, !dbg !130
+  %add.i.i = add nsw i64 %rem.1.i, 48, !dbg !131
+  %call.i.i = tail call i64 @putchar(i64 %add.i.i) nounwind noimplicitfloat, !dbg !131
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !124) nounwind, !dbg !132
+  tail call void @llvm.dbg.value(metadata !{i64 %rem.1.i}, i64 0, metadata !128) nounwind, !dbg !130
+  %add.i.1.i = add nsw i64 %rem.i, 48, !dbg !131
+  %call.i.1.i = tail call i64 @putchar(i64 %add.i.1.i) nounwind noimplicitfloat, !dbg !131
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !124) nounwind, !dbg !132
+  %inc = add nsw i64 %x.06, 1, !dbg !116
+  tail call void @llvm.dbg.value(metadata !{i64 %inc}, i64 0, metadata !38), !dbg !116
+  %2 = load i64* @size, align 8, !dbg !116, !tbaa !118
+  %cmp = icmp slt i64 %inc, %2, !dbg !116
+  br i1 %cmp, label %for.body, label %for.end, !dbg !116
+
+for.end:                                          ; preds = %for.body, %entry
+  %call2 = tail call i64 @putchar(i64 10) nounwind noimplicitfloat, !dbg !133
+  ret void, !dbg !134
+}
+
+define void @arctan(i64 %multiplier, i64 %denom, i64 %sign) nounwind uwtable noimplicitfloat {
+entry:
+  tail call void @llvm.dbg.value(metadata !{i64 %multiplier}, i64 0, metadata !46), !dbg !135
+  tail call void @llvm.dbg.value(metadata !{i64 %denom}, i64 0, metadata !47), !dbg !135
+  tail call void @llvm.dbg.value(metadata !{i64 %sign}, i64 0, metadata !48), !dbg !135
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !56), !dbg !136
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !49), !dbg !137
+  %0 = load i64* @size, align 8, !dbg !137, !tbaa !118
+  %cmp150 = icmp sgt i64 %0, 0, !dbg !137
+  %1 = load i64** @powers, align 8, !dbg !139, !tbaa !140
+  br i1 %cmp150, label %for.body, label %for.end, !dbg !137
+
+for.body:                                         ; preds = %entry, %for.body
+  %x.0151 = phi i64 [ %inc, %for.body ], [ 0, %entry ]
+  %arrayidx = getelementptr inbounds i64* %1, i64 %x.0151, !dbg !139
+  store i64 0, i64* %arrayidx, align 8, !dbg !139, !tbaa !118
+  %inc = add nsw i64 %x.0151, 1, !dbg !137
+  tail call void @llvm.dbg.value(metadata !{i64 %inc}, i64 0, metadata !49), !dbg !137
+  %2 = load i64* @size, align 8, !dbg !137, !tbaa !118
+  %cmp = icmp slt i64 %inc, %2, !dbg !137
+  br i1 %cmp, label %for.body, label %for.end, !dbg !137
+
+for.end:                                          ; preds = %entry, %for.body
+  %3 = phi i64 [ %2, %for.body ], [ %0, %entry ]
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !54), !dbg !141
+  tail call void @llvm.dbg.value(metadata !{i64 %denom}, i64 0, metadata !55), !dbg !142
+  %mul = mul nsw i64 %denom, %denom, !dbg !142
+  tail call void @llvm.dbg.value(metadata !{i64 %mul}, i64 0, metadata !55), !dbg !142
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !57), !dbg !143
+  %mul1 = mul nsw i64 %denom, %multiplier, !dbg !144
+  tail call void @llvm.dbg.value(metadata !{i64 %mul1}, i64 0, metadata !51), !dbg !144
+  %4 = load i64** @pi, align 8, !dbg !145, !tbaa !140
+  %5 = load i64** @term, align 8, !dbg !145, !tbaa !140
+  br label %while.cond.outer, !dbg !148
+
+while.cond.loopexit:                              ; preds = %for.cond62
+  ret void, !dbg !149
+
+while.cond.outer:                                 ; preds = %while.cond74, %for.end
+  %6 = phi i64 [ %3, %for.end ], [ %16, %while.cond74 ]
+  %sign.addr.0.ph = phi i64 [ %sign, %for.end ], [ %sub60, %while.cond74 ]
+  %remain.0.ph = phi i64 [ %mul1, %for.end ], [ 0, %while.cond74 ]
+  %divisor.0.ph = phi i64 [ 1, %for.end ], [ %add61, %while.cond74 ]
+  %adv.0.ph = phi i64 [ 0, %for.end ], [ %adv.1, %while.cond74 ]
+  %cmp3130 = icmp slt i64 %adv.0.ph, %6, !dbg !150
+  br i1 %cmp3130, label %for.body4, label %for.cond13.loopexit, !dbg !150
+
+for.body4:                                        ; preds = %while.cond.outer, %for.body4
+  %remain.1132 = phi i64 [ %mul9, %for.body4 ], [ %remain.0.ph, %while.cond.outer ]
+  %x.1131 = phi i64 [ %inc11, %for.body4 ], [ %adv.0.ph, %while.cond.outer ]
+  %arrayidx5 = getelementptr inbounds i64* %1, i64 %x.1131, !dbg !152
+  %7 = load i64* %arrayidx5, align 8, !dbg !152, !tbaa !118
+  %add = add nsw i64 %7, %remain.1132, !dbg !152
+  tail call void @llvm.dbg.value(metadata !{i64 %add}, i64 0, metadata !53), !dbg !152
+  %div = sdiv i64 %add, %mul, !dbg !154
+  store i64 %div, i64* %arrayidx5, align 8, !dbg !154, !tbaa !118
+  %mul8 = mul nsw i64 %div, %mul, !dbg !155
+  %sub = sub nsw i64 %add, %mul8, !dbg !155
+  %mul9 = mul nsw i64 %sub, 100, !dbg !155
+  tail call void @llvm.dbg.value(metadata !{i64 %mul9}, i64 0, metadata !51), !dbg !155
+  %inc11 = add nsw i64 %x.1131, 1, !dbg !150
+  tail call void @llvm.dbg.value(metadata !{i64 %inc11}, i64 0, metadata !49), !dbg !150
+  %8 = load i64* @size, align 8, !dbg !150, !tbaa !118
+  %cmp3 = icmp slt i64 %inc11, %8, !dbg !150
+  br i1 %cmp3, label %for.body4, label %for.cond13.loopexit, !dbg !150
+
+for.cond13.loopexit:                              ; preds = %for.body4, %while.cond.outer
+  %9 = phi i64 [ %6, %while.cond.outer ], [ %8, %for.body4 ]
+  %cmp14133 = icmp slt i64 %adv.0.ph, %9, !dbg !156
+  br i1 %cmp14133, label %for.body15, label %for.end26, !dbg !156
+
+for.body15:                                       ; preds = %for.cond13.loopexit, %for.body15
+  %remain.2135 = phi i64 [ %mul23, %for.body15 ], [ 0, %for.cond13.loopexit ]
+  %x.2134 = phi i64 [ %inc25, %for.body15 ], [ %adv.0.ph, %for.cond13.loopexit ]
+  %arrayidx16 = getelementptr inbounds i64* %1, i64 %x.2134, !dbg !158
+  %10 = load i64* %arrayidx16, align 8, !dbg !158, !tbaa !118
+  %add17 = add nsw i64 %10, %remain.2135, !dbg !158
+  tail call void @llvm.dbg.value(metadata !{i64 %add17}, i64 0, metadata !53), !dbg !158
+  %div18 = sdiv i64 %add17, %divisor.0.ph, !dbg !160
+  %arrayidx19 = getelementptr inbounds i64* %5, i64 %x.2134, !dbg !160
+  store i64 %div18, i64* %arrayidx19, align 8, !dbg !160, !tbaa !118
+  %mul21 = mul nsw i64 %div18, %divisor.0.ph, !dbg !161
+  %sub22 = sub nsw i64 %add17, %mul21, !dbg !161
+  %mul23 = mul nsw i64 %sub22, 100, !dbg !161
+  tail call void @llvm.dbg.value(metadata !{i64 %mul23}, i64 0, metadata !51), !dbg !161
+  %inc25 = add nsw i64 %x.2134, 1, !dbg !156
+  tail call void @llvm.dbg.value(metadata !{i64 %inc25}, i64 0, metadata !49), !dbg !156
+  %11 = load i64* @size, align 8, !dbg !156, !tbaa !118
+  %cmp14 = icmp slt i64 %inc25, %11, !dbg !156
+  br i1 %cmp14, label %for.body15, label %for.end26, !dbg !156
+
+for.end26:                                        ; preds = %for.body15, %for.cond13.loopexit
+  %.lcssa = phi i64 [ %9, %for.cond13.loopexit ], [ %11, %for.body15 ]
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !51), !dbg !162
+  %cmp27 = icmp sgt i64 %sign.addr.0.ph, 0, !dbg !163
+  %cmp30142 = icmp sgt i64 %.lcssa, 0, !dbg !164
+  br i1 %cmp27, label %for.cond29.preheader, label %for.cond44.preheader, !dbg !163
+
+for.cond29.preheader:                             ; preds = %for.end26
+  br i1 %cmp30142, label %for.body31, label %if.end59, !dbg !164
+
+for.cond44.preheader:                             ; preds = %for.end26
+  br i1 %cmp30142, label %for.body46, label %if.end59, !dbg !166
+
+for.body31:                                       ; preds = %for.cond29.preheader, %for.body31
+  %x.3144.in = phi i64 [ %x.3144, %for.body31 ], [ %.lcssa, %for.cond29.preheader ]
+  %carry.0143 = phi i64 [ %carry.1, %for.body31 ], [ 0, %for.cond29.preheader ]
+  %x.3144 = add nsw i64 %x.3144.in, -1, !dbg !164
+  %arrayidx32 = getelementptr inbounds i64* %4, i64 %x.3144, !dbg !167
+  %12 = load i64* %arrayidx32, align 8, !dbg !167, !tbaa !118
+  %arrayidx33 = getelementptr inbounds i64* %5, i64 %x.3144, !dbg !167
+  %13 = load i64* %arrayidx33, align 8, !dbg !167, !tbaa !118
+  %add34 = add i64 %12, %carry.0143, !dbg !167
+  %add35 = add i64 %add34, %13, !dbg !167
+  tail call void @llvm.dbg.value(metadata !{i64 %add35}, i64 0, metadata !61), !dbg !167
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !58), !dbg !169
+  %cmp36 = icmp sgt i64 %add35, 99, !dbg !170
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !58), !dbg !171
+  %sub38 = add nsw i64 %add35, -100, !dbg !173
+  tail call void @llvm.dbg.value(metadata !{i64 %sub38}, i64 0, metadata !61), !dbg !173
+  %carry.1 = zext i1 %cmp36 to i64, !dbg !170
+  %sum.0 = select i1 %cmp36, i64 %sub38, i64 %add35, !dbg !170
+  store i64 %sum.0, i64* %arrayidx32, align 8, !dbg !174, !tbaa !118
+  %cmp30 = icmp sgt i64 %x.3144, 0, !dbg !164
+  br i1 %cmp30, label %for.body31, label %if.end59, !dbg !164
+
+for.body46:                                       ; preds = %for.cond44.preheader, %for.body46
+  %x.4139.in = phi i64 [ %x.4139, %for.body46 ], [ %.lcssa, %for.cond44.preheader ]
+  %borrow.0138 = phi i64 [ %sub50.lobit, %for.body46 ], [ 0, %for.cond44.preheader ]
+  %x.4139 = add nsw i64 %x.4139.in, -1, !dbg !166
+  %arrayidx47 = getelementptr inbounds i64* %4, i64 %x.4139, !dbg !145
+  %14 = load i64* %arrayidx47, align 8, !dbg !145, !tbaa !118
+  %arrayidx48 = getelementptr inbounds i64* %5, i64 %x.4139, !dbg !145
+  %15 = load i64* %arrayidx48, align 8, !dbg !145, !tbaa !118
+  %sub49 = sub nsw i64 %14, %15, !dbg !145
+  %sub50 = sub i64 %sub49, %borrow.0138, !dbg !145
+  tail call void @llvm.dbg.value(metadata !{i64 %sub50}, i64 0, metadata !64), !dbg !145
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !62), !dbg !175
+  %cmp51 = icmp slt i64 %sub50, 0, !dbg !176
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !62), !dbg !177
+  %add53 = add nsw i64 %sub50, 100, !dbg !179
+  tail call void @llvm.dbg.value(metadata !{i64 %add53}, i64 0, metadata !64), !dbg !179
+  %sub50.lobit = lshr i64 %sub50, 63, !dbg !176
+  %sum42.0 = select i1 %cmp51, i64 %add53, i64 %sub50, !dbg !176
+  store i64 %sum42.0, i64* %arrayidx47, align 8, !dbg !180, !tbaa !118
+  %cmp45 = icmp sgt i64 %x.4139, 0, !dbg !166
+  br i1 %cmp45, label %for.body46, label %if.end59, !dbg !166
+
+if.end59:                                         ; preds = %for.cond29.preheader, %for.body31, %for.cond44.preheader, %for.body46
+  %sub60 = sub nsw i64 0, %sign.addr.0.ph, !dbg !181
+  tail call void @llvm.dbg.value(metadata !{i64 %sub60}, i64 0, metadata !48), !dbg !181
+  %add61 = add nsw i64 %divisor.0.ph, 2, !dbg !182
+  tail call void @llvm.dbg.value(metadata !{i64 %add61}, i64 0, metadata !54), !dbg !182
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !56), !dbg !183
+  tail call void @llvm.dbg.value(metadata !{i64 %adv.0.ph}, i64 0, metadata !49), !dbg !184
+  %16 = load i64* @size, align 8, !dbg !184, !tbaa !118
+  br label %for.cond62, !dbg !184
+
+for.cond62:                                       ; preds = %for.body64, %if.end59
+  %x.5 = phi i64 [ %adv.0.ph, %if.end59 ], [ %inc70, %for.body64 ]
+  %cmp63 = icmp slt i64 %x.5, %16, !dbg !184
+  br i1 %cmp63, label %for.body64, label %while.cond.loopexit, !dbg !184
+
+for.body64:                                       ; preds = %for.cond62
+  %arrayidx65 = getelementptr inbounds i64* %1, i64 %x.5, !dbg !186
+  %17 = load i64* %arrayidx65, align 8, !dbg !186, !tbaa !118
+  %tobool66 = icmp eq i64 %17, 0, !dbg !186
+  %inc70 = add nsw i64 %x.5, 1, !dbg !184
+  tail call void @llvm.dbg.value(metadata !{i64 %inc70}, i64 0, metadata !49), !dbg !184
+  br i1 %tobool66, label %for.cond62, label %while.cond74, !dbg !186
+
+while.cond74:                                     ; preds = %for.body64, %while.cond74
+  %adv.1 = phi i64 [ %inc78, %while.cond74 ], [ %adv.0.ph, %for.body64 ]
+  %arrayidx75 = getelementptr inbounds i64* %1, i64 %adv.1, !dbg !188
+  %18 = load i64* %arrayidx75, align 8, !dbg !188, !tbaa !118
+  %cmp76 = icmp eq i64 %18, 0, !dbg !188
+  %inc78 = add nsw i64 %adv.1, 1, !dbg !190
+  tail call void @llvm.dbg.value(metadata !{i64 %inc78}, i64 0, metadata !57), !dbg !190
+  br i1 %cmp76, label %while.cond74, label %while.cond.outer, !dbg !188
+}
+
+define i64 @_main(i64 %argc, i8** nocapture %argv) nounwind uwtable noimplicitfloat {
+entry:
+  tail call void @llvm.dbg.value(metadata !{i64 %argc}, i64 0, metadata !73), !dbg !191
+  tail call void @llvm.dbg.value(metadata !{i8** %argv}, i64 0, metadata !74), !dbg !191
+  %cmp = icmp eq i64 %argc, 2, !dbg !192
+  br i1 %cmp, label %if.end, label %if.then, !dbg !192
+
+if.then:                                          ; preds = %entry
+  %call = tail call i64 @puts(i8* getelementptr inbounds ([81 x i8]* @.str, i64 0, i64 0)) nounwind noimplicitfloat, !dbg !193
+  tail call void @llexit(i64 1) nounwind noimplicitfloat, !dbg !195
+  br label %if.end, !dbg !196
+
+if.end:                                           ; preds = %entry, %if.then
+  %arrayidx = getelementptr inbounds i8** %argv, i64 1, !dbg !197
+  %0 = load i8** %arrayidx, align 8, !dbg !197, !tbaa !140
+  %call1 = tail call i64 @atol(i8* %0) nounwind noimplicitfloat, !dbg !197
+  store i64 %call1, i64* @size, align 8, !dbg !197, !tbaa !118
+  %cmp2 = icmp slt i64 %call1, 1, !dbg !198
+  br i1 %cmp2, label %if.then3, label %if.end5, !dbg !198
+
+if.then3:                                         ; preds = %if.end
+  %call4 = tail call i64 @puts(i8* getelementptr inbounds ([34 x i8]* @.str1, i64 0, i64 0)) nounwind noimplicitfloat, !dbg !199
+  tail call void @llexit(i64 1) nounwind noimplicitfloat, !dbg !201
+  %.pre = load i64* @size, align 8, !dbg !202, !tbaa !118
+  br label %if.end5, !dbg !203
+
+if.end5:                                          ; preds = %if.then3, %if.end
+  %1 = phi i64 [ %.pre, %if.then3 ], [ %call1, %if.end ]
+  %sub = add nsw i64 %1, 1, !dbg !202
+  %div = sdiv i64 %sub, 2, !dbg !202
+  %add6 = add nsw i64 %div, 1, !dbg !202
+  store i64 %add6, i64* @size, align 8, !dbg !202, !tbaa !118
+  %mul = shl i64 %add6, 3, !dbg !204
+  %call7 = tail call i8* @malloc(i64 %mul) nounwind noimplicitfloat, !dbg !204
+  %2 = bitcast i8* %call7 to i64*, !dbg !204
+  store i64* %2, i64** @pi, align 8, !dbg !204, !tbaa !140
+  %call9 = tail call i8* @malloc(i64 %mul) nounwind noimplicitfloat, !dbg !205
+  %3 = bitcast i8* %call9 to i64*, !dbg !205
+  store i64* %3, i64** @powers, align 8, !dbg !205, !tbaa !140
+  %call11 = tail call i8* @malloc(i64 %mul) nounwind noimplicitfloat, !dbg !206
+  %4 = bitcast i8* %call11 to i64*, !dbg !206
+  store i64* %4, i64** @term, align 8, !dbg !206, !tbaa !140
+  %cmp12 = icmp eq i8* %call7, null, !dbg !207
+  %cmp13 = icmp eq i8* %call9, null, !dbg !207
+  %or.cond = or i1 %cmp12, %cmp13, !dbg !207
+  %cmp15 = icmp eq i8* %call11, null, !dbg !207
+  %or.cond26 = or i1 %or.cond, %cmp15, !dbg !207
+  br i1 %or.cond26, label %if.then16, label %for.cond.preheader, !dbg !207
+
+if.then16:                                        ; preds = %if.end5
+  %call17 = tail call i64 @puts(i8* getelementptr inbounds ([35 x i8]* @.str2, i64 0, i64 0)) nounwind noimplicitfloat, !dbg !208
+  tail call void @llexit(i64 1) nounwind noimplicitfloat, !dbg !210
+  %.pre31 = load i64* @size, align 8, !dbg !211, !tbaa !118
+  br label %for.cond.preheader, !dbg !213
+
+for.cond.preheader:                               ; preds = %if.end5, %if.then16
+  %5 = phi i64 [ %add6, %if.end5 ], [ %.pre31, %if.then16 ]
+  %cmp1929 = icmp sgt i64 %5, 0, !dbg !211
+  br i1 %cmp1929, label %for.body.lr.ph, label %for.end, !dbg !211
+
+for.body.lr.ph:                                   ; preds = %for.cond.preheader
+  %6 = load i64** @pi, align 8, !dbg !214, !tbaa !140
+  br label %for.body, !dbg !211
+
+for.body:                                         ; preds = %for.body.lr.ph, %for.body
+  %x.030 = phi i64 [ 0, %for.body.lr.ph ], [ %inc, %for.body ]
+  %arrayidx20 = getelementptr inbounds i64* %6, i64 %x.030, !dbg !214
+  store i64 0, i64* %arrayidx20, align 8, !dbg !214, !tbaa !118
+  %inc = add nsw i64 %x.030, 1, !dbg !211
+  tail call void @llvm.dbg.value(metadata !{i64 %inc}, i64 0, metadata !75), !dbg !211
+  %7 = load i64* @size, align 8, !dbg !211, !tbaa !118
+  %cmp19 = icmp slt i64 %inc, %7, !dbg !211
+  br i1 %cmp19, label %for.body, label %for.end, !dbg !211
+
+for.end:                                          ; preds = %for.body, %for.cond.preheader
+  %call21 = tail call i64 @time(i64* null) nounwind noimplicitfloat, !dbg !215
+  tail call void @llvm.dbg.value(metadata !{i64 %call21}, i64 0, metadata !77), !dbg !215
+  tail call void @arctan(i64 16, i64 5, i64 1) noimplicitfloat, !dbg !216
+  tail call void @arctan(i64 4, i64 239, i64 -1) noimplicitfloat, !dbg !217
+  %call22 = tail call i64 @time(i64* null) nounwind noimplicitfloat, !dbg !218
+  tail call void @llvm.dbg.value(metadata !{i64 %call22}, i64 0, metadata !79), !dbg !218
+  %8 = load i64** @pi, align 8, !dbg !219, !tbaa !140
+  tail call void @llvm.dbg.value(metadata !{i64* %8}, i64 0, metadata !220) nounwind, !dbg !221
+  %call.i = tail call i64 @putchar(i64 51) nounwind noimplicitfloat, !dbg !222
+  %call1.i = tail call i64 @putchar(i64 46) nounwind noimplicitfloat, !dbg !223
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !224) nounwind, !dbg !225
+  %9 = load i64* @size, align 8, !dbg !225, !tbaa !118
+  %cmp5.i = icmp sgt i64 %9, 1, !dbg !225
+  br i1 %cmp5.i, label %for.body.i, label %Print.exit, !dbg !225
+
+for.body.i:                                       ; preds = %for.end, %for.body.i
+  %x.06.i = phi i64 [ %inc.i, %for.body.i ], [ 1, %for.end ]
+  %arrayidx.i = getelementptr inbounds i64* %8, i64 %x.06.i, !dbg !226
+  %10 = load i64* %arrayidx.i, align 8, !dbg !226, !tbaa !118
+  tail call void @llvm.dbg.value(metadata !{i64 %10}, i64 0, metadata !227) nounwind, !dbg !228
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !229) nounwind, !dbg !230
+  %rem.i.i = srem i64 %10, 10, !dbg !231
+  %div.i.i = sdiv i64 %10, 10, !dbg !232
+  tail call void @llvm.dbg.value(metadata !{i64 %div.i.i}, i64 0, metadata !227) nounwind, !dbg !232
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !229) nounwind, !dbg !230
+  %rem.1.i.i = srem i64 %div.i.i, 10, !dbg !231
+  tail call void @llvm.dbg.value(metadata !{i64 %div.i.i}, i64 0, metadata !227) nounwind, !dbg !232
+  tail call void @llvm.dbg.value(metadata !105, i64 0, metadata !229) nounwind, !dbg !230
+  tail call void @llvm.dbg.value(metadata !{i64 %rem.1.i.i}, i64 0, metadata !233) nounwind, !dbg !235
+  %add.i.i.i = add nsw i64 %rem.1.i.i, 48, !dbg !236
+  %call.i.i.i = tail call i64 @putchar(i64 %add.i.i.i) nounwind noimplicitfloat, !dbg !236
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !229) nounwind, !dbg !237
+  tail call void @llvm.dbg.value(metadata !{i64 %rem.1.i.i}, i64 0, metadata !233) nounwind, !dbg !235
+  %add.i.1.i.i = add nsw i64 %rem.i.i, 48, !dbg !236
+  %call.i.1.i.i = tail call i64 @putchar(i64 %add.i.1.i.i) nounwind noimplicitfloat, !dbg !236
+  tail call void @llvm.dbg.value(metadata !99, i64 0, metadata !229) nounwind, !dbg !237
+  %inc.i = add nsw i64 %x.06.i, 1, !dbg !225
+  tail call void @llvm.dbg.value(metadata !{i64 %inc.i}, i64 0, metadata !224) nounwind, !dbg !225
+  %11 = load i64* @size, align 8, !dbg !225, !tbaa !118
+  %cmp.i = icmp slt i64 %inc.i, %11, !dbg !225
+  br i1 %cmp.i, label %for.body.i, label %Print.exit, !dbg !225
+
+Print.exit:                                       ; preds = %for.body.i, %for.end
+  %call2.i = tail call i64 @putchar(i64 10) nounwind noimplicitfloat, !dbg !238
+  %call23 = tail call i64 @puts(i8* getelementptr inbounds ([18 x i8]* @.str3, i64 0, i64 0)) nounwind noimplicitfloat, !dbg !239
+  %sub24 = sub nsw i64 %call22, %call21, !dbg !240
+  tail call void @PrintVal(i64 %sub24) noimplicitfloat, !dbg !240
+  %call25 = tail call i64 @puts(i8* getelementptr inbounds ([9 x i8]* @.str4, i64 0, i64 0)) nounwind noimplicitfloat, !dbg !241
+  ret i64 0, !dbg !242
+}
+
+declare i64 @puts(i8* nocapture) nounwind noimplicitfloat
+
+declare void @llexit(i64) noimplicitfloat
+
+declare i64 @atol(i8* nocapture) nounwind readonly noimplicitfloat
+
+declare noalias i8* @malloc(i64) nounwind noimplicitfloat
+
+declare i64 @time(i64*) noimplicitfloat
+
+declare void @llvm.dbg.value(metadata, i64, metadata) nounwind readnone
+
+!llvm.dbg.cu = !{!0}
+
+!0 = metadata !{i32 786449, i32 0, i32 12, metadata !"prog2.c", metadata !"/scratch/mferdman/tests/prog2", metadata !"clang version 3.3 (trunk 171645)", i1 true, i1 true, metadata !"", i32 0, metadata !1, metadata !1, metadata !3, metadata !80} ; [ DW_TAG_compile_unit ] [/scratch/mferdman/tests/prog2/prog2.c] [DW_LANG_C99]
+!1 = metadata !{metadata !2}
+!2 = metadata !{i32 0}
+!3 = metadata !{metadata !4}
+!4 = metadata !{metadata !5, metadata !14, metadata !18, metadata !31, metadata !41, metadata !65}
+!5 = metadata !{i32 786478, i32 0, metadata !6, metadata !"OutDig", metadata !"OutDig", metadata !"", metadata !6, i32 90, metadata !7, i1 false, i1 true, i32 0, i32 0, null, i32 256, i1 true, void (i64)* @OutDig, null, null, metadata !11, i32 91} ; [ DW_TAG_subprogram ] [line 90] [def] [scope 91] [OutDig]
+!6 = metadata !{i32 786473, metadata !"prog2.c", metadata !"/scratch/mferdman/tests/prog2", null} ; [ DW_TAG_file_type ]
+!7 = metadata !{i32 786453, i32 0, metadata !"", i32 0, i32 0, i64 0, i64 0, i64 0, i32 0, null, metadata !8, i32 0, i32 0} ; [ DW_TAG_subroutine_type ] [line 0, size 0, align 0, offset 0] [from ]
+!8 = metadata !{null, metadata !9}
+!9 = metadata !{i32 786454, null, metadata !"INT", metadata !6, i32 83, i64 0, i64 0, i64 0, i32 0, metadata !10} ; [ DW_TAG_typedef ] [INT] [line 83, size 0, align 0, offset 0] [from long long int]
+!10 = metadata !{i32 786468, null, metadata !"long long int", null, i32 0, i64 64, i64 64, i64 0, i32 0, i32 5} ; [ DW_TAG_base_type ] [long long int] [line 0, size 64, align 64, offset 0, enc DW_ATE_signed]
+!11 = metadata !{metadata !12}
+!12 = metadata !{metadata !13}
+!13 = metadata !{i32 786689, metadata !5, metadata !"dig", metadata !6, i32 16777306, metadata !9, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [dig] [line 90]
+!14 = metadata !{i32 786478, i32 0, metadata !6, metadata !"PrintVal", metadata !"PrintVal", metadata !"", metadata !6, i32 95, metadata !7, i1 false, i1 true, i32 0, i32 0, null, i32 256, i1 true, void (i64)* @PrintVal, null, null, metadata !15, i32 95} ; [ DW_TAG_subprogram ] [line 95] [def] [PrintVal]
+!15 = metadata !{metadata !16}
+!16 = metadata !{metadata !17}
+!17 = metadata !{i32 786689, metadata !14, metadata !"val", metadata !6, i32 16777311, metadata !9, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [val] [line 95]
+!18 = metadata !{i32 786478, i32 0, metadata !6, metadata !"PrintShort", metadata !"PrintShort", metadata !"", metadata !6, i32 101, metadata !19, i1 false, i1 true, i32 0, i32 0, null, i32 256, i1 true, void (i64)* @PrintShort, null, null, metadata !22, i32 102} ; [ DW_TAG_subprogram ] [line 101] [def] [scope 102] [PrintShort]
+!19 = metadata !{i32 786453, i32 0, metadata !"", i32 0, i32 0, i64 0, i64 0, i64 0, i32 0, null, metadata !20, i32 0, i32 0} ; [ DW_TAG_subroutine_type ] [line 0, size 0, align 0, offset 0] [from ]
+!20 = metadata !{null, metadata !21}
+!21 = metadata !{i32 786454, null, metadata !"SHORT", metadata !6, i32 78, i64 0, i64 0, i64 0, i32 0, metadata !10} ; [ DW_TAG_typedef ] [SHORT] [line 78, size 0, align 0, offset 0] [from long long int]
+!22 = metadata !{metadata !23}
+!23 = metadata !{metadata !24, metadata !25, metadata !27}
+!24 = metadata !{i32 786689, metadata !18, metadata !"num", metadata !6, i32 16777317, metadata !21, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [num] [line 101]
+!25 = metadata !{i32 786688, metadata !26, metadata !"x", metadata !6, i32 103, metadata !9, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [x] [line 103]
+!26 = metadata !{i32 786443, metadata !18, i32 102, i32 0, metadata !6, i32 2} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!27 = metadata !{i32 786688, metadata !26, metadata !"digits", metadata !6, i32 104, metadata !28, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [digits] [line 104]
+!28 = metadata !{i32 786433, null, metadata !"", null, i32 0, i64 192, i64 64, i32 0, i32 0, metadata !9, metadata !29, i32 0, i32 0} ; [ DW_TAG_array_type ] [line 0, size 192, align 64, offset 0] [from INT]
+!29 = metadata !{metadata !30}
+!30 = metadata !{i32 786465, i64 0, i64 3}        ; [ DW_TAG_subrange_type ] [0, 2]
+!31 = metadata !{i32 786478, i32 0, metadata !6, metadata !"Print", metadata !"Print", metadata !"", metadata !6, i32 115, metadata !32, i1 false, i1 true, i32 0, i32 0, null, i32 256, i1 true, void (i64*)* @Print, null, null, metadata !35, i32 116} ; [ DW_TAG_subprogram ] [line 115] [def] [scope 116] [Print]
+!32 = metadata !{i32 786453, i32 0, metadata !"", i32 0, i32 0, i64 0, i64 0, i64 0, i32 0, null, metadata !33, i32 0, i32 0} ; [ DW_TAG_subroutine_type ] [line 0, size 0, align 0, offset 0] [from ]
+!33 = metadata !{null, metadata !34}
+!34 = metadata !{i32 786447, null, metadata !"", null, i32 0, i64 64, i64 64, i64 0, i32 0, metadata !21} ; [ DW_TAG_pointer_type ] [line 0, size 64, align 64, offset 0] [from SHORT]
+!35 = metadata !{metadata !36}
+!36 = metadata !{metadata !37, metadata !38}
+!37 = metadata !{i32 786689, metadata !31, metadata !"num", metadata !6, i32 16777331, metadata !34, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [num] [line 115]
+!38 = metadata !{i32 786688, metadata !39, metadata !"x", metadata !6, i32 117, metadata !40, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [x] [line 117]
+!39 = metadata !{i32 786443, metadata !31, i32 116, i32 0, metadata !6, i32 6} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!40 = metadata !{i32 786454, null, metadata !"INDEXER", metadata !6, i32 82, i64 0, i64 0, i64 0, i32 0, metadata !10} ; [ DW_TAG_typedef ] [INDEXER] [line 82, size 0, align 0, offset 0] [from long long int]
+!41 = metadata !{i32 786478, i32 0, metadata !6, metadata !"arctan", metadata !"arctan", metadata !"", metadata !6, i32 126, metadata !42, i1 false, i1 true, i32 0, i32 0, null, i32 256, i1 true, void (i64, i64, i64)* @arctan, null, null, metadata !44, i32 127} ; [ DW_TAG_subprogram ] [line 126] [def] [scope 127] [arctan]
+!42 = metadata !{i32 786453, i32 0, metadata !"", i32 0, i32 0, i64 0, i64 0, i64 0, i32 0, null, metadata !43, i32 0, i32 0} ; [ DW_TAG_subroutine_type ] [line 0, size 0, align 0, offset 0] [from ]
+!43 = metadata !{null, metadata !9, metadata !9, metadata !9}
+!44 = metadata !{metadata !45}
+!45 = metadata !{metadata !46, metadata !47, metadata !48, metadata !49, metadata !51, metadata !53, metadata !54, metadata !55, metadata !56, metadata !57, metadata !58, metadata !61, metadata !62, metadata !64}
+!46 = metadata !{i32 786689, metadata !41, metadata !"multiplier", metadata !6, i32 16777342, metadata !9, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [multiplier] [line 126]
+!47 = metadata !{i32 786689, metadata !41, metadata !"denom", metadata !6, i32 33554558, metadata !9, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [denom] [line 126]
+!48 = metadata !{i32 786689, metadata !41, metadata !"sign", metadata !6, i32 50331774, metadata !9, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [sign] [line 126]
+!49 = metadata !{i32 786688, metadata !50, metadata !"x", metadata !6, i32 128, metadata !40, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [x] [line 128]
+!50 = metadata !{i32 786443, metadata !41, i32 127, i32 0, metadata !6, i32 8} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!51 = metadata !{i32 786688, metadata !50, metadata !"remain", metadata !6, i32 129, metadata !52, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [remain] [line 129]
+!52 = metadata !{i32 786454, null, metadata !"LONG", metadata !6, i32 79, i64 0, i64 0, i64 0, i32 0, metadata !10} ; [ DW_TAG_typedef ] [LONG] [line 79, size 0, align 0, offset 0] [from long long int]
+!53 = metadata !{i32 786688, metadata !50, metadata !"temp", metadata !6, i32 129, metadata !52, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [temp] [line 129]
+!54 = metadata !{i32 786688, metadata !50, metadata !"divisor", metadata !6, i32 129, metadata !52, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [divisor] [line 129]
+!55 = metadata !{i32 786688, metadata !50, metadata !"denom2", metadata !6, i32 129, metadata !52, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [denom2] [line 129]
+!56 = metadata !{i32 786688, metadata !50, metadata !"NotZero", metadata !6, i32 130, metadata !21, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [NotZero] [line 130]
+!57 = metadata !{i32 786688, metadata !50, metadata !"adv", metadata !6, i32 131, metadata !40, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [adv] [line 131]
+!58 = metadata !{i32 786688, metadata !59, metadata !"carry", metadata !6, i32 161, metadata !52, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [carry] [line 161]
+!59 = metadata !{i32 786443, metadata !60, i32 160, i32 0, metadata !6, i32 15} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!60 = metadata !{i32 786443, metadata !50, i32 142, i32 0, metadata !6, i32 10} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!61 = metadata !{i32 786688, metadata !59, metadata !"sum", metadata !6, i32 161, metadata !52, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [sum] [line 161]
+!62 = metadata !{i32 786688, metadata !63, metadata !"borrow", metadata !6, i32 178, metadata !52, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [borrow] [line 178]
+!63 = metadata !{i32 786443, metadata !60, i32 177, i32 0, metadata !6, i32 19} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!64 = metadata !{i32 786688, metadata !63, metadata !"sum", metadata !6, i32 178, metadata !52, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [sum] [line 178]
+!65 = metadata !{i32 786478, i32 0, metadata !6, metadata !"_main", metadata !"_main", metadata !"", metadata !6, i32 215, metadata !66, i1 false, i1 true, i32 0, i32 0, null, i32 256, i1 true, i64 (i64, i8**)* @_main, null, null, metadata !71, i32 216} ; [ DW_TAG_subprogram ] [line 215] [def] [scope 216] [_main]
+!66 = metadata !{i32 786453, i32 0, metadata !"", i32 0, i32 0, i64 0, i64 0, i64 0, i32 0, null, metadata !67, i32 0, i32 0} ; [ DW_TAG_subroutine_type ] [line 0, size 0, align 0, offset 0] [from ]
+!67 = metadata !{metadata !10, metadata !10, metadata !68}
+!68 = metadata !{i32 786447, null, metadata !"", null, i32 0, i64 64, i64 64, i64 0, i32 0, metadata !69} ; [ DW_TAG_pointer_type ] [line 0, size 64, align 64, offset 0] [from ]
+!69 = metadata !{i32 786447, null, metadata !"", null, i32 0, i64 64, i64 64, i64 0, i32 0, metadata !70} ; [ DW_TAG_pointer_type ] [line 0, size 64, align 64, offset 0] [from char]
+!70 = metadata !{i32 786468, null, metadata !"char", null, i32 0, i64 8, i64 8, i64 0, i32 0, i32 6} ; [ DW_TAG_base_type ] [char] [line 0, size 8, align 8, offset 0, enc DW_ATE_signed_char]
+!71 = metadata !{metadata !72}
+!72 = metadata !{metadata !73, metadata !74, metadata !75, metadata !77, metadata !79}
+!73 = metadata !{i32 786689, metadata !65, metadata !"argc", metadata !6, i32 16777431, metadata !10, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [argc] [line 215]
+!74 = metadata !{i32 786689, metadata !65, metadata !"argv", metadata !6, i32 33554647, metadata !68, i32 0, i32 0} ; [ DW_TAG_arg_variable ] [argv] [line 215]
+!75 = metadata !{i32 786688, metadata !76, metadata !"x", metadata !6, i32 217, metadata !40, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [x] [line 217]
+!76 = metadata !{i32 786443, metadata !65, i32 216, i32 0, metadata !6, i32 27} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!77 = metadata !{i32 786688, metadata !76, metadata !"T1", metadata !6, i32 218, metadata !78, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [T1] [line 218]
+!78 = metadata !{i32 786454, null, metadata !"time_t", metadata !6, i32 14, i64 0, i64 0, i64 0, i32 0, metadata !10} ; [ DW_TAG_typedef ] [time_t] [line 14, size 0, align 0, offset 0] [from long long int]
+!79 = metadata !{i32 786688, metadata !76, metadata !"T2", metadata !6, i32 218, metadata !78, i32 0, i32 0} ; [ DW_TAG_auto_variable ] [T2] [line 218]
+!80 = metadata !{metadata !81}
+!81 = metadata !{metadata !82, metadata !83, metadata !84, metadata !85}
+!82 = metadata !{i32 786484, i32 0, null, metadata !"pi", metadata !"pi", metadata !"", metadata !6, i32 86, metadata !34, i32 0, i32 1, i64** @pi} ; [ DW_TAG_variable ] [pi] [line 86] [def]
+!83 = metadata !{i32 786484, i32 0, null, metadata !"powers", metadata !"powers", metadata !"", metadata !6, i32 86, metadata !34, i32 0, i32 1, i64** @powers} ; [ DW_TAG_variable ] [powers] [line 86] [def]
+!84 = metadata !{i32 786484, i32 0, null, metadata !"term", metadata !"term", metadata !"", metadata !6, i32 86, metadata !34, i32 0, i32 1, i64** @term} ; [ DW_TAG_variable ] [term] [line 86] [def]
+!85 = metadata !{i32 786484, i32 0, null, metadata !"size", metadata !"size", metadata !"", metadata !6, i32 87, metadata !40, i32 0, i32 1, i64* @size} ; [ DW_TAG_variable ] [size] [line 87] [def]
+!86 = metadata !{i32 90, i32 0, metadata !5, null}
+!87 = metadata !{i32 92, i32 0, metadata !88, null}
+!88 = metadata !{i32 786443, metadata !5, i32 91, i32 0, metadata !6, i32 0} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!89 = metadata !{i32 93, i32 0, metadata !88, null}
+!90 = metadata !{i32 95, i32 0, metadata !14, null}
+!91 = metadata !{i32 96, i32 0, metadata !92, null}
+!92 = metadata !{i32 786443, metadata !14, i32 95, i32 0, metadata !6, i32 1} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!93 = metadata !{i32 97, i32 0, metadata !92, null}
+!94 = metadata !{i32 786689, metadata !5, metadata !"dig", metadata !6, i32 16777306, metadata !9, i32 0, metadata !93} ; [ DW_TAG_arg_variable ] [dig] [line 90]
+!95 = metadata !{i32 90, i32 0, metadata !5, metadata !93}
+!96 = metadata !{i32 92, i32 0, metadata !88, metadata !93}
+!97 = metadata !{i32 98, i32 0, metadata !92, null}
+!98 = metadata !{i32 101, i32 0, metadata !18, null}
+!99 = metadata !{i64 0}
+!100 = metadata !{i32 106, i32 0, metadata !101, null}
+!101 = metadata !{i32 786443, metadata !26, i32 106, i32 0, metadata !6, i32 3} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!102 = metadata !{i32 108, i32 0, metadata !103, null}
+!103 = metadata !{i32 786443, metadata !101, i32 107, i32 0, metadata !6, i32 4} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!104 = metadata !{i32 109, i32 0, metadata !103, null}
+!105 = metadata !{i64 1}
+!106 = metadata !{i32 786689, metadata !5, metadata !"dig", metadata !6, i32 16777306, metadata !9, i32 0, metadata !107} ; [ DW_TAG_arg_variable ] [dig] [line 90]
+!107 = metadata !{i32 112, i32 0, metadata !108, null}
+!108 = metadata !{i32 786443, metadata !26, i32 111, i32 0, metadata !6, i32 5} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!109 = metadata !{i32 90, i32 0, metadata !5, metadata !107}
+!110 = metadata !{i32 92, i32 0, metadata !88, metadata !107}
+!111 = metadata !{i32 111, i32 0, metadata !108, null}
+!112 = metadata !{i32 113, i32 0, metadata !26, null}
+!113 = metadata !{i32 115, i32 0, metadata !31, null}
+!114 = metadata !{i32 119, i32 0, metadata !39, null}
+!115 = metadata !{i32 120, i32 0, metadata !39, null}
+!116 = metadata !{i32 121, i32 0, metadata !117, null}
+!117 = metadata !{i32 786443, metadata !39, i32 121, i32 0, metadata !6, i32 7} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!118 = metadata !{metadata !"long long", metadata !119}
+!119 = metadata !{metadata !"omnipotent char", metadata !120}
+!120 = metadata !{metadata !"Simple C/C++ TBAA"}
+!121 = metadata !{i32 122, i32 0, metadata !117, null}
+!122 = metadata !{i32 786689, metadata !18, metadata !"num", metadata !6, i32 16777317, metadata !21, i32 0, metadata !121} ; [ DW_TAG_arg_variable ] [num] [line 101]
+!123 = metadata !{i32 101, i32 0, metadata !18, metadata !121}
+!124 = metadata !{i32 786688, metadata !26, metadata !"x", metadata !6, i32 103, metadata !9, i32 0, metadata !121} ; [ DW_TAG_auto_variable ] [x] [line 103]
+!125 = metadata !{i32 106, i32 0, metadata !101, metadata !121}
+!126 = metadata !{i32 108, i32 0, metadata !103, metadata !121}
+!127 = metadata !{i32 109, i32 0, metadata !103, metadata !121}
+!128 = metadata !{i32 786689, metadata !5, metadata !"dig", metadata !6, i32 16777306, metadata !9, i32 0, metadata !129} ; [ DW_TAG_arg_variable ] [dig] [line 90]
+!129 = metadata !{i32 112, i32 0, metadata !108, metadata !121}
+!130 = metadata !{i32 90, i32 0, metadata !5, metadata !129}
+!131 = metadata !{i32 92, i32 0, metadata !88, metadata !129}
+!132 = metadata !{i32 111, i32 0, metadata !108, metadata !121}
+!133 = metadata !{i32 123, i32 0, metadata !39, null}
+!134 = metadata !{i32 124, i32 0, metadata !39, null}
+!135 = metadata !{i32 126, i32 0, metadata !41, null}
+!136 = metadata !{i32 130, i32 0, metadata !50, null}
+!137 = metadata !{i32 133, i32 0, metadata !138, null}
+!138 = metadata !{i32 786443, metadata !50, i32 133, i32 0, metadata !6, i32 9} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!139 = metadata !{i32 134, i32 0, metadata !138, null}
+!140 = metadata !{metadata !"any pointer", metadata !119}
+!141 = metadata !{i32 136, i32 0, metadata !50, null}
+!142 = metadata !{i32 137, i32 0, metadata !50, null}
+!143 = metadata !{i32 138, i32 0, metadata !50, null}
+!144 = metadata !{i32 140, i32 0, metadata !50, null}
+!145 = metadata !{i32 183, i32 0, metadata !146, null}
+!146 = metadata !{i32 786443, metadata !147, i32 182, i32 0, metadata !6, i32 21} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!147 = metadata !{i32 786443, metadata !63, i32 181, i32 0, metadata !6, i32 20} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!148 = metadata !{i32 141, i32 0, metadata !50, null}
+!149 = metadata !{i32 213, i32 0, metadata !50, null}
+!150 = metadata !{i32 143, i32 0, metadata !151, null}
+!151 = metadata !{i32 786443, metadata !60, i32 143, i32 0, metadata !6, i32 11} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!152 = metadata !{i32 145, i32 0, metadata !153, null}
+!153 = metadata !{i32 786443, metadata !151, i32 144, i32 0, metadata !6, i32 12} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!154 = metadata !{i32 146, i32 0, metadata !153, null}
+!155 = metadata !{i32 147, i32 0, metadata !153, null}
+!156 = metadata !{i32 151, i32 0, metadata !157, null}
+!157 = metadata !{i32 786443, metadata !60, i32 151, i32 0, metadata !6, i32 13} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!158 = metadata !{i32 153, i32 0, metadata !159, null}
+!159 = metadata !{i32 786443, metadata !157, i32 152, i32 0, metadata !6, i32 14} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!160 = metadata !{i32 154, i32 0, metadata !159, null}
+!161 = metadata !{i32 155, i32 0, metadata !159, null}
+!162 = metadata !{i32 157, i32 0, metadata !60, null}
+!163 = metadata !{i32 159, i32 0, metadata !60, null}
+!164 = metadata !{i32 164, i32 0, metadata !165, null}
+!165 = metadata !{i32 786443, metadata !59, i32 164, i32 0, metadata !6, i32 16} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!166 = metadata !{i32 181, i32 0, metadata !147, null}
+!167 = metadata !{i32 166, i32 0, metadata !168, null}
+!168 = metadata !{i32 786443, metadata !165, i32 165, i32 0, metadata !6, i32 17} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!169 = metadata !{i32 167, i32 0, metadata !168, null}
+!170 = metadata !{i32 168, i32 0, metadata !168, null}
+!171 = metadata !{i32 170, i32 0, metadata !172, null}
+!172 = metadata !{i32 786443, metadata !168, i32 169, i32 0, metadata !6, i32 18} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!173 = metadata !{i32 171, i32 0, metadata !172, null}
+!174 = metadata !{i32 173, i32 0, metadata !168, null}
+!175 = metadata !{i32 184, i32 0, metadata !146, null}
+!176 = metadata !{i32 185, i32 0, metadata !146, null}
+!177 = metadata !{i32 187, i32 0, metadata !178, null}
+!178 = metadata !{i32 786443, metadata !146, i32 186, i32 0, metadata !6, i32 22} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!179 = metadata !{i32 188, i32 0, metadata !178, null}
+!180 = metadata !{i32 190, i32 0, metadata !146, null}
+!181 = metadata !{i32 194, i32 0, metadata !60, null}
+!182 = metadata !{i32 195, i32 0, metadata !60, null}
+!183 = metadata !{i32 196, i32 0, metadata !60, null}
+!184 = metadata !{i32 197, i32 0, metadata !185, null}
+!185 = metadata !{i32 786443, metadata !60, i32 197, i32 0, metadata !6, i32 23} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!186 = metadata !{i32 199, i32 0, metadata !187, null}
+!187 = metadata !{i32 786443, metadata !185, i32 198, i32 0, metadata !6, i32 24} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!188 = metadata !{i32 208, i32 0, metadata !189, null}
+!189 = metadata !{i32 786443, metadata !60, i32 207, i32 0, metadata !6, i32 26} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!190 = metadata !{i32 209, i32 0, metadata !189, null}
+!191 = metadata !{i32 215, i32 0, metadata !65, null}
+!192 = metadata !{i32 220, i32 0, metadata !76, null}
+!193 = metadata !{i32 222, i32 0, metadata !194, null}
+!194 = metadata !{i32 786443, metadata !76, i32 221, i32 0, metadata !6, i32 28} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!195 = metadata !{i32 223, i32 0, metadata !194, null}
+!196 = metadata !{i32 224, i32 0, metadata !194, null}
+!197 = metadata !{i32 226, i32 0, metadata !76, null}
+!198 = metadata !{i32 228, i32 0, metadata !76, null}
+!199 = metadata !{i32 230, i32 0, metadata !200, null}
+!200 = metadata !{i32 786443, metadata !76, i32 229, i32 0, metadata !6, i32 29} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!201 = metadata !{i32 231, i32 0, metadata !200, null}
+!202 = metadata !{i32 234, i32 0, metadata !76, null}
+!203 = metadata !{i32 232, i32 0, metadata !200, null}
+!204 = metadata !{i32 236, i32 0, metadata !76, null}
+!205 = metadata !{i32 237, i32 0, metadata !76, null}
+!206 = metadata !{i32 238, i32 0, metadata !76, null}
+!207 = metadata !{i32 240, i32 0, metadata !76, null}
+!208 = metadata !{i32 242, i32 0, metadata !209, null}
+!209 = metadata !{i32 786443, metadata !76, i32 241, i32 0, metadata !6, i32 30} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!210 = metadata !{i32 243, i32 0, metadata !209, null}
+!211 = metadata !{i32 246, i32 0, metadata !212, null}
+!212 = metadata !{i32 786443, metadata !76, i32 246, i32 0, metadata !6, i32 31} ; [ DW_TAG_lexical_block ] [/scratch/mferdman/tests/prog2/prog2.c]
+!213 = metadata !{i32 244, i32 0, metadata !209, null}
+!214 = metadata !{i32 247, i32 0, metadata !212, null}
+!215 = metadata !{i32 249, i32 0, metadata !76, null}
+!216 = metadata !{i32 268, i32 0, metadata !76, null}
+!217 = metadata !{i32 269, i32 0, metadata !76, null}
+!218 = metadata !{i32 272, i32 0, metadata !76, null}
+!219 = metadata !{i32 274, i32 0, metadata !76, null}
+!220 = metadata !{i32 786689, metadata !31, metadata !"num", metadata !6, i32 16777331, metadata !34, i32 0, metadata !219} ; [ DW_TAG_arg_variable ] [num] [line 115]
+!221 = metadata !{i32 115, i32 0, metadata !31, metadata !219}
+!222 = metadata !{i32 119, i32 0, metadata !39, metadata !219}
+!223 = metadata !{i32 120, i32 0, metadata !39, metadata !219}
+!224 = metadata !{i32 786688, metadata !39, metadata !"x", metadata !6, i32 117, metadata !40, i32 0, metadata !219} ; [ DW_TAG_auto_variable ] [x] [line 117]
+!225 = metadata !{i32 121, i32 0, metadata !117, metadata !219}
+!226 = metadata !{i32 122, i32 0, metadata !117, metadata !219}
+!227 = metadata !{i32 786689, metadata !18, metadata !"num", metadata !6, i32 16777317, metadata !21, i32 0, metadata !226} ; [ DW_TAG_arg_variable ] [num] [line 101]
+!228 = metadata !{i32 101, i32 0, metadata !18, metadata !226}
+!229 = metadata !{i32 786688, metadata !26, metadata !"x", metadata !6, i32 103, metadata !9, i32 0, metadata !226} ; [ DW_TAG_auto_variable ] [x] [line 103]
+!230 = metadata !{i32 106, i32 0, metadata !101, metadata !226}
+!231 = metadata !{i32 108, i32 0, metadata !103, metadata !226}
+!232 = metadata !{i32 109, i32 0, metadata !103, metadata !226}
+!233 = metadata !{i32 786689, metadata !5, metadata !"dig", metadata !6, i32 16777306, metadata !9, i32 0, metadata !234} ; [ DW_TAG_arg_variable ] [dig] [line 90]
+!234 = metadata !{i32 112, i32 0, metadata !108, metadata !226}
+!235 = metadata !{i32 90, i32 0, metadata !5, metadata !234}
+!236 = metadata !{i32 92, i32 0, metadata !88, metadata !234}
+!237 = metadata !{i32 111, i32 0, metadata !108, metadata !226}
+!238 = metadata !{i32 123, i32 0, metadata !39, metadata !219}
+!239 = metadata !{i32 277, i32 0, metadata !76, null}
+!240 = metadata !{i32 278, i32 0, metadata !76, null}
+!241 = metadata !{i32 279, i32 0, metadata !76, null}
+!242 = metadata !{i32 282, i32 0, metadata !76, null}
