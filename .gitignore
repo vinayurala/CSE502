@@ -6,5 +6,8 @@ Module.symvers
 hw1.mod.*
 scratch*
 core-project/remotesync
-core-project/*.o
+*.o
 core-project/prog*/*.o
+HW/cache
+HW/KernMod/*.ko
+
