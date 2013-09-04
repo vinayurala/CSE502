@@ -24,7 +24,22 @@ public:
 	sc_in<bool>				clk;
 	sc_in<bool>				reset;
 
-	Top(const sc_module_name &name, const char* memfile);
+	sc_signal<mem_op>      i_op[i_ports];
+	sc_signal<int>         i_tagin[i_ports];
+	sc_signal<sc_addr>     i_addr[i_ports];
+	sc_signal<bool>        i_ready[i_ports];
+	sc_signal<int>         i_tagout[i_ports];
+	sc_signal<sc_inst>     i_data[i_ports];
+	
+	sc_signal<mem_op>      d_op[d_ports];
+	sc_signal<int>         d_tagin[d_ports];
+	sc_signal<sc_addr>     d_addr[d_ports];
+	sc_signal<bool>        d_ready[d_ports];
+	sc_signal<int>         d_tagout[d_ports];
+	sc_signal<sc_data>     d_data[d_ports];
+	sc_signal<sc_data>     d_din[d_ports];
+
+	Top(const sc_module_name &name, int argc, char* argv[]);
 };
 
 #endif

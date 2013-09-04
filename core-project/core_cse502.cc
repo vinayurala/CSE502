@@ -5,18 +5,11 @@ using namespace std;
 
 void CoreCSE502::do_reset() {
 	Core::do_reset();
+	fetch.RIP = RIP;
+	fetch.RSP = RSP;
+	regfile.rsp = RSP;
 }
 
 void CoreCSE502::work() {
 	if (reset) return;
-}
-
-
-void fetch()
-{
-  cout<<"\nIn Fetch\n"<<endl;
-  i_op = READ;
-  
-  
-  
 }

@@ -1,0 +1,6 @@
+Flags register
+====================================================================================================
+SAL(R), SHL(R) - Affects OF and CF. Last bit to be popped out (MSB/LSB) goes to CF.
+                 For SHL and SAL, OF will be set if the MSB of the result is not 
+                 same as the bit in CF. For SHR and SAR, OF will be set to the MSB
+                 of the original operand.

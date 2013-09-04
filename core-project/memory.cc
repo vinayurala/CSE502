@@ -9,6 +9,7 @@
 #include "memory.h"
 
 uint64_t entry;
+uint64_t brk_val;
 
 uint64_t load_elf(char* mem, const char* filename) {
 	int fd = open(filename,O_RDONLY);
@@ -53,13 +54,18 @@ void Memory<i_ports,d_ports>::mem_init(const char* filename) {
 		);
 	assert(mem == (void*)mem_base);
 	entry = load_elf(mem, filename);
+	brk_val = mem_size/2;
 	sc_data dl; assert(dl.length() % 8 == 0);
 }
+
+#define ENFORCE_ALIGNMENT
 
 template<int i_ports, int d_ports>
 sc_inst Memory<i_ports,d_ports>::mem_i_read(const sc_addr& addr) {
 	sc_inst v;
-	//assert(addr % (v.length() / 8) == 0); FIXME: should be here, but breaks sample solution; in fact, should just drop lower bits from the addr input to Memory (maybe create a sc_word_addr in const.h for this purpose).
+#ifdef ENFORCE_ALIGNMENT
+	assert(addr % (v.length() / 8) == 0);
+#endif
 	const int bytecount = v.length()/8;
 	for(int bytes = 0; bytes < bytecount; ++bytes)
 		v.range((bytecount-bytes)*8-1, (bytecount-bytes-1)*8) = sc_uint<8>(int(mem[addr+bytes]));
@@ -69,21 +75,26 @@ sc_inst Memory<i_ports,d_ports>::mem_i_read(const sc_addr& addr) {
 template<int i_ports, int d_ports>
 sc_data Memory<i_ports,d_ports>::mem_d_read(const sc_addr& addr) {
 	sc_data v;
-	//assert(addr % (v.length() / 8) == 0); FIXME: should be here, but breaks sample solution; in fact, should just drop lower bits from the addr input to Memory (maybe create a sc_word_addr in const.h for this purpose).
+#ifdef ENFORCE_ALIGNMENT
+	assert(addr % (v.length() / 8) == 0);
+#endif
 	const int bytecount = v.length()/8;
 	for(int bytes = 0; bytes < bytecount; ++bytes)
-		v.range((bytecount-bytes)*8-1, (bytecount-bytes-1)*8) = sc_uint<8>(int(mem[addr+bytes]));
+		v.range((bytecount-bytes)*8-1, (bytecount-bytes-1)*8) = sc_uint<8>(int(mem[addr+bytecount-bytes-1]));
+	// cout<<"\n\nMEMORY READ:"<<hex<<v.to_ulong()<<endl<<endl;
 	return v;
 }
 
 template<int i_ports, int d_ports>
-sc_data Memory<i_ports,d_ports>::mem_d_write(const sc_addr& addr, const sc_data& data) {
+void Memory<i_ports,d_ports>::mem_d_write(const sc_addr& addr, const sc_data& data) {
 	sc_data v;
-	//assert(addr % (v.length() / 8) == 0); FIXME: should be here, but breaks sample solution; in fact, should just drop lower bits from the addr input to Memory (maybe create a sc_word_addr in const.h for this purpose).
+#ifdef ENFORCE_ALIGNMENT
+	assert(addr % (v.length() / 8) == 0);
+#endif
 	const int bytecount = v.length()/8;
 	for(int bytes = 0; bytes < bytecount; ++bytes)
 		mem[addr+bytes] = data.range((bytes+1)*8-1, (bytes)*8);
-	return v;
+ 	// cout<<"Memory write. Address "<<hex<<addr <<" Data "<<data<<endl;
 }
 
 template<int i_ports, int d_ports>
@@ -102,6 +113,11 @@ void Memory<i_ports,d_ports>::work() {
 		i_ready[port] = true;
 		i_tagout[port] = ready->first;
 		i_data[port] = mem_i_read(ready->second);
+		if (i_mshr.find(ready->second) != i_mshr.end()) {
+			for(list<int>::iterator i=i_mshr[ready->second].begin(); i!=i_mshr[ready->second].end(); ++i)
+				i_resp.add(make_pair(*i, ready->second), 0 * ns);
+			i_mshr.erase(ready->second);
+		}
 	}
 	for(int port = 0; port < d_ports; ++port) {
 		ready = d_resp.get();
@@ -112,11 +128,20 @@ void Memory<i_ports,d_ports>::work() {
 		d_ready[port] = true;
 		d_tagout[port] = ready->first;
 		d_data[port] = mem_d_read(ready->second);
+		if (d_mshr.find(ready->second) != d_mshr.end()) {
+			for(list<int>::iterator i=d_mshr[ready->second].begin(); i!=d_mshr[ready->second].end(); ++i)
+				d_resp.add(make_pair(*i, ready->second), 0 * ns);
+			d_mshr.erase(ready->second);
+		}
 	}
 
 	for(int port = 0; port < i_ports; ++port) {
 		if (i_op[port] != NONE) {
 			assert(i_op[port]==READ);
+			if (i_mshr.find(i_addr[port].read()) != i_mshr.end()) {
+				i_mshr[i_addr[port].read()].push_back(i_tagin[port].read());
+				continue;
+			}
 			int latency = 2;
 			typename Cache::oV l1ov = L1i.get(i_addr[port]);
 			if (!l1ov) {
@@ -129,13 +154,24 @@ void Memory<i_ports,d_ports>::work() {
 					if (l2e.second == DIRTY) ; // needs writeback
 				}
 			}
+			assert(i_addr[port].read() > 0xffff); // jumped to invalid address
 			assert(i_addr[port].read() < mem_size);
 			i_resp.add(make_pair(i_tagin[port].read(), i_addr[port].read()), latency * ns);
+			i_mshr[i_addr[port].read()]; // create empty list
 		}
 	}
 
-	for(int port = 0; port < i_ports; ++port) {
+	for(int port = 0; port < d_ports; ++port) {
 		if (d_op[port] != NONE) {
+			assert(d_addr[port].read() > 0xffff); // loading invalid address
+			assert(d_addr[port].read() < mem_size);
+			if (d_op[port] == WRITE) {
+				mem_d_write(d_addr[port].read(), d_din[port].read());
+			}
+			if (d_mshr.find(d_addr[port].read()) != d_mshr.end()) {
+				d_mshr[d_addr[port].read()].push_back(d_tagin[port].read());
+				continue;
+			}
 			int latency = 3;
 			typename Cache::oV l1ov = L1d.get(d_addr[port]);
 			if (!l1ov) {
@@ -157,22 +193,30 @@ void Memory<i_ports,d_ports>::work() {
 			} else {
 				if (d_op[port] == WRITE) *l1ov = DIRTY;
 			}
-			assert(d_addr[port].read() < mem_size);
-			if (d_op[port] == WRITE) mem_d_write(d_addr[port].read(), d_data[port].read());
 			d_resp.add(make_pair(d_tagin[port].read(), d_addr[port].read()), latency * ns);
+			d_mshr[d_addr[port].read()]; // create empty list
 		}
 	}
 
 }
 
 template<int i_ports, int d_ports>
-Memory<i_ports,d_ports>::Memory(const sc_module_name &name, const char* filename)
+Memory<i_ports,d_ports>::Memory(const sc_module_name &name, int argc, char* argv[])
 	:	sc_module(name)
 	,	L1i(128)
 	,	L1d(128)
 	,	L2(1024)
 {
-	mem_init(filename);
+	mem_init(argv[0]);
+	char** newargv = (char**)(mem+stack_base);
+	char* p = mem + stack_base + sizeof(char*)*argc/*argv[]*/ + sizeof(char*)*1/*argc*/;
+	p += sizeof(char*); // for env
+	for(int n=0; n<argc; ++n) {
+		newargv[n+1] = strcpy(p, argv[n]) - mem_base;
+		p += strlen(p)+1;
+	}
+	*p = 0; // env
+	*((long long*)newargv) = (long long)argc;
 	SC_METHOD(work); sensitive << clk.pos();
 }
 

@@ -1,0 +1,22 @@
+Decoder.cc
+==========================================================================
+1)  Add support for displacement and reg to mem operations         See 7  
+2a) Sign extending an immed val is not working; check the sign
+    extend logic                                                   FIXED
+2b) Sign extend not returning right values for offsets. Changed
+    the logic which checks if MSB is set or not                    FIXED
+3)  Useless opcodes are being printed. Find and fix them.          FIXED
+4)  Add support for the following instructions: cqto, lea, sar, 
+    neg                                                            FIXED
+5)  Opsize for the first 128 bits of instructions is wrong. 
+    Size_bytes is not not getting dequeued correctly.              FIXED
+6)  Address in 'address' field of uop incorrect                    FIXED
+7)  Check if there are any instructions other than lea that uses
+    base, scale and index registers.                               See 9
+8)  Prepending incomplete bytes is not correct. It blindly 
+    prepends the rem_string to bit_stream.                         FIXED
+9)  Opcodes without a base register [in (base,index,scale) scheme]
+    is not handled.                                                FIXED
+10) Add extra src_types (IMUL_1, IMUL_2, IMUL_3, 
+    IMMED_PC_RELATIVE)                                             FIXED
+==========================================================================

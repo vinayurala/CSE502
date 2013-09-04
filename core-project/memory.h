@@ -3,6 +3,8 @@
 
 #include <systemc>
 #include <iostream>
+#include <list>
+#include <map>
 
 #include "delaybucket.h"
 #include "lruset.h"
@@ -26,10 +28,12 @@ class Memory : public sc_module
 	void mem_init(const char* filename);
 	sc_inst mem_i_read(const sc_addr& addr);
 	sc_data mem_d_read(const sc_addr& addr);
-	sc_data mem_d_write(const sc_addr& addr, const sc_data& data);
+	void mem_d_write(const sc_addr& addr, const sc_data& data);
 
 	typedef delaybucket<pair<int, sc_addr> > cache_delaybucket;
 	cache_delaybucket i_resp, d_resp;
+	typedef map<sc_addr, list<int> > mshr;
+	mshr i_mshr, d_mshr;
 
 	void work();
 
@@ -40,17 +44,18 @@ public:
 	sc_in<mem_op>      i_op[i_ports];
 	sc_in<int>         i_tagin[i_ports];
 	sc_in<sc_addr>     i_addr[i_ports];
-	sc_signal<bool>    i_ready[i_ports];
-	sc_signal<int>     i_tagout[i_ports];
-	sc_signal<sc_inst> i_data[i_ports];
+	sc_out<bool>       i_ready[i_ports];
+	sc_out<int>        i_tagout[i_ports];
+	sc_out<sc_inst>    i_data[i_ports];
 	sc_in<mem_op>      d_op[d_ports];
 	sc_in<int>         d_tagin[d_ports];
 	sc_in<sc_addr>     d_addr[d_ports];
-	sc_signal<bool>    d_ready[d_ports];
-	sc_signal<int>     d_tagout[d_ports];
-	sc_signal<sc_data> d_data[d_ports];
+	sc_out<bool>       d_ready[d_ports];
+	sc_out<int>        d_tagout[d_ports];
+	sc_out<sc_data>    d_data[d_ports];
+	sc_in<sc_data>     d_din[d_ports];
 
-	Memory(const sc_module_name &name, const char* filename);
+	Memory(const sc_module_name &name, int argc, char* argv[]);
 };
 
 #endif

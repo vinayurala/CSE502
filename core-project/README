@@ -1,0 +1,5 @@
+POINTS: 60 //corresponds to the project selected
+GROUP: amogh, vinay, prankur  //user IDs of all group members
+LICENSE: 2 clause BSD license. //the license applied to submission
+IMPLEMENTATION: We have a 5 stage scalar pipeline that faithfully simulates the subset of the x86 ISA that is required to run prog1 and prog2. This simulation faithfully simulates flag manipulation only for cmp, test and neg. There are pipeline registers/buffers between every stage in the pipeliine and we have for correctness' sake restricted each buffers size to only one instruction (note programmer specified instruction, not uops.) indexed mode instructions will get get broken into multiple uops and all of the uops that correspond to one instruction will be pushed into the execute buffer at once.
+

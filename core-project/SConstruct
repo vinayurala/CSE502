@@ -1,0 +1,13 @@
+num_cpus = 1
+try:
+    import multiprocessing
+    num_cpus = multiprocessing.cpu_count()
+except (ImportError,NotImplementedError):
+    pass
+SetOption('num_jobs', num_cpus)
+
+sysc_lib = '/usr/local/systemc230/lib-linux64'
+env = Environment(CCFLAGS = '-g3 -I/usr/local/systemc230/include', LIBPATH = sysc_lib, RPATH = sysc_lib)
+
+src_files = Glob('*.cc')
+env.Program('cse502-cpu', src_files, LIBS = ['systemc', 'udis86'])
