@@ -10,4 +10,4 @@ core-project/remotesync
 core-project/prog*/*.o
 HW/cache
 HW/KernMod/*.ko
-
+.sconsign.dblite

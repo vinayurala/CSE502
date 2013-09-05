@@ -1,7 +1,7 @@
 #include "writeback.h"
 #include <iomanip>
-//#define DEBUG
-#define DEBUG_PRINT
+// #define DEBUG
+// #define DEBUG_PRINT
 
 void Writeback::do_reset()
 {
