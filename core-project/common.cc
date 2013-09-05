@@ -1,7 +1,8 @@
 #include "common.h"
+
 using namespace std;
 
-stack<long long>	core_stack;
+stack<long long> core_stack;
 
 ARF regfile = { 0 };
 

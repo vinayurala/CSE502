@@ -10,10 +10,6 @@
 
 using namespace std;
 
-// #define DEBUG
-// #define PRINT_DEBUG
-// #define CPP_PRINT
-
 static int die_counter = 0;
 queue<string> scratch_q;
 queue<int> size_bytes;
@@ -24,7 +20,8 @@ string Decoder::byte_stream = string();
 int Decoder::stream_len = 0;
 
 
-int Decoder::input_hook(ud_t *ud_obj)
+int 
+Decoder::input_hook(ud_t *ud_obj)
 {
   if (byte_seek_ptr >= stream_len)
     return UD_EOI;
@@ -40,7 +37,8 @@ int Decoder::input_hook(ud_t *ud_obj)
   return (num & 0xFF);
 }
 
-string Decoder::bin2hex(string input)
+string 
+Decoder::bin2hex(string input)
 {
   ostringstream c;
   int i, j;
@@ -64,7 +62,8 @@ string Decoder::bin2hex(string input)
 
 }
 
-uint64_t Decoder::sign_extend(long long immed_val, int size)
+uint64_t 
+Decoder::sign_extend(long long immed_val, int size)
 {
   uint64_t ret_val;
   ostringstream o;
@@ -72,10 +71,9 @@ uint64_t Decoder::sign_extend(long long immed_val, int size)
   string temp, scratch;
 
   o<<hex<<immed_val;
-  num_bits = (o.str().length()) * 4;        // Can use log2 function as well; optimizations to be done later
+  // Can use log2 function as well; optimizations to be done later
+  num_bits = (o.str().length()) * 4;       
   o.str(string());
-
-  // cout<<"\n\n"<<__FILE__<<": sign_extend: immed = "<<hex<<immed_val<<dec<<"\tsize: "<<size<<endl;
 
   if (num_bits == size) {
     unsigned int msb = (1 << (size-1)) & immed_val;
@@ -84,10 +82,8 @@ uint64_t Decoder::sign_extend(long long immed_val, int size)
     char ch1 = (msb) ? 'f' : '0';
     temp = scratch.assign(16-temp.length(), ch1) + temp; 
     istringstream i(temp);
-    // cout<<"\n"<<__FILE__<<": temp = "<<temp<<endl;
     i>>hex>>ret_val;
     o.str(string());
-    // cout<<"\n"<<__FILE__<<": ret_val: "<<hex<<ret_val<<dec<<endl;
   }
 
   else
@@ -96,16 +92,9 @@ uint64_t Decoder::sign_extend(long long immed_val, int size)
   return ret_val;
 }
 
-// void Decoder::clear_struct(struct uop *temp_uop)
-// {
-//   // Since we don't touch value1 and value2, they won't be initialized
-//   temp_uop->opcode = temp_uop->reg1 = temp_uop->reg2 = 1;
-//   temp_uop->immed = INT_MIN;
-//   temp_uop->src = NO_SRC;
-// }
-
-
-void Decoder::push2q(int mnemonic, int reg1, int reg2, int reg3, uint64_t immed_val, int source)
+void 
+Decoder::push2q(int mnemonic, int reg1, int reg2, int reg3, uint64_t immed_val,
+                int source)
 {
   struct uop temp_uop;
   
@@ -124,7 +113,8 @@ void Decoder::push2q(int mnemonic, int reg1, int reg2, int reg3, uint64_t immed_
 // UDIS86 return format
 // ud_obj.operand[0] = target
 // ud_obj.operand[1] = source
-void Decoder::crack_opcodes(queue<ud_t> opcodes)
+void 
+Decoder::crack_opcodes(queue<ud_t> opcodes)
 {
    struct uop temp_uop;
   ud_t ud_obj;
@@ -139,16 +129,21 @@ void Decoder::crack_opcodes(queue<ud_t> opcodes)
     cout<<"\n"<<__FILE__<<": "<<dec<<__LINE__<<" ASM: "<<ud_insn_asm(&ud_obj);
 #endif
 
-// #ifdef CPP_PRINT
-//     // cout<<"\n"<<__FILE__<<": ASM: "<<ud_insn_asm(&ud_obj);
-//     cout<<"\n"<<__FILE__<<": "<<dec<<__LINE__<<" ud_obj.operand[0].type = "<<ud_obj.operand[0].type<<" ud_obj.operand[1].type = "<<ud_obj.operand[1].type<<" ud_obj.operand[2].type "<<ud_obj.operand[2].type<<endl;
-//     cout<<"\n"<<__FILE__<<": "<<__LINE__<<" ud_obj.operand[1].scale = "<<(int)ud_obj.operand[1].scale<<endl;
-// #endif
+#ifdef CPP_PRINT
+    cout<<"\n"<<__FILE__<<": ASM: "<<ud_insn_asm(&ud_obj);
+    cout<<"\n"<<__FILE__<<": "<<dec<<__LINE__<<" ud_obj.operand[0].type = ";
+    cout<<ud_obj.operand[0].type<<" ud_obj.operand[1].type = ";
+    cout<<ud_obj.operand[1].type<<" ud_obj.operand[2].type ";
+    cout<<ud_obj.operand[2].type<<endl;
+    cout<<"\n"<<__FILE__<<": "<<__LINE__<<" ud_obj.operand[1].scale = ";
+    cout<<(int)ud_obj.operand[1].scale<<endl;
+#endif
 
     // retq, syscall etc
     if (ud_obj.operand[0].type == UD_NONE && ud_obj.operand[1].type == UD_NONE) {    
 #ifdef CPP_PRINT
-      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__<<" mnenomic = "<<ud_obj.mnemonic<<endl; 
+      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__<<" mnenomic = ";
+      cout<<ud_obj.mnemonic<<endl; 
 #endif
       push2q(ud_obj.mnemonic, UD_NONE, UD_NONE, UD_NONE, UD_NONE, NO_SRC);
       addr_q.pop();
@@ -159,33 +154,42 @@ void Decoder::crack_opcodes(queue<ud_t> opcodes)
     // imul - can't think a better way of handling it
     if (ud_obj.mnemonic == UD_Iimul) {
 #ifdef CPP_PRINT
-      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__<<" mnenomic = "<<ud_obj.mnemonic<<endl;
+      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__<<" mnenomic = ";
+      cout<<ud_obj.mnemonic<<endl;
 #endif
-      int third_operand = (ud_obj.operand[2].type != UD_NONE) ? (ud_obj.operand[2].type == UD_OP_REG ? 1 : 2) : 0;
-      int second_operand = (ud_obj.operand[1].type != UD_NONE) ? (ud_obj.operand[1].type == UD_OP_REG ? 1 : 2) : 0;
+      int third_operand = (ud_obj.operand[2].type != UD_NONE) \
+                          ? (ud_obj.operand[2].type == UD_OP_REG ? 1 : 2) : 0;
+      int second_operand = (ud_obj.operand[1].type != UD_NONE) \
+                           ? (ud_obj.operand[1].type == UD_OP_REG ? 1 : 2) : 0;
 
-      // cout<<"\n\n"<<__FILE__<<":"<<__LINE__<<" second operand = "<<second_operand<<" third operand = "<<third_operand<<endl;
       
       // imul dst, src1, src2
       if (third_operand == 1)
-        push2q(ud_obj.mnemonic, ud_obj.operand[1].base, ud_obj.operand[0].base, ud_obj.operand[2].base, UD_NONE, IMUL_3);
+        push2q(ud_obj.mnemonic, ud_obj.operand[1].base, ud_obj.operand[0].base,
+               ud_obj.operand[2].base, UD_NONE, IMUL_3);
 
       // imul dst, src1, immed
       else if (third_operand == 2)
-        push2q(ud_obj.mnemonic, ud_obj.operand[1].base, ud_obj.operand[0].base, UD_NONE, sign_extend(ud_obj.operand[2].lval.uqword, ud_obj.operand[2].size), IMUL_3);
+        push2q(ud_obj.mnemonic, ud_obj.operand[1].base, ud_obj.operand[0].base,
+               UD_NONE, sign_extend(ud_obj.operand[2].lval.uqword, 
+                                    ud_obj.operand[2].size), IMUL_3);
 
       else {
         // imul dst, src
         if (second_operand == 1)
-          push2q(ud_obj.mnemonic, ud_obj.operand[1].base, ud_obj.operand[0].base, UD_NONE, UD_NONE, IMUL_2R);
+          push2q(ud_obj.mnemonic, ud_obj.operand[1].base, 
+                 ud_obj.operand[0].base, UD_NONE, UD_NONE, IMUL_2R);
      
         // imul dst, immed
         else if (second_operand == 2)
-          push2q(ud_obj.mnemonic, UD_NONE, ud_obj.operand[0].base, UD_NONE, sign_extend(ud_obj.operand[2].lval.uqword, ud_obj.operand[2].size), IMUL_2I);
+          push2q(ud_obj.mnemonic, UD_NONE, ud_obj.operand[0].base, UD_NONE, 
+                 sign_extend(ud_obj.operand[2].lval.uqword, 
+                             ud_obj.operand[2].size), IMUL_2I);
       
         else
           // imul src
-          push2q(ud_obj.mnemonic, ud_obj.operand[0].base, UD_NONE, UD_NONE, UD_NONE, IMUL_1);
+          push2q(ud_obj.mnemonic, ud_obj.operand[0].base, UD_NONE, UD_NONE,
+                 UD_NONE, IMUL_1);
       }
       addr_q.pop();
       size_bytes.pop();
@@ -193,14 +197,21 @@ void Decoder::crack_opcodes(queue<ud_t> opcodes)
     }
 
     // reg to reg 
-    if (ud_obj.operand[0].type == UD_OP_REG && ud_obj.operand[1].type == UD_OP_REG) {
+    if ((ud_obj.operand[0].type == UD_OP_REG)\
+        && (ud_obj.operand[1].type == UD_OP_REG)) {
 #ifdef CPP_PRINT
-      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__<<" mnenomic = "<<ud_obj.mnemonic<<endl;
-      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__<<" operand[0] type = "<<ud_obj.operand[0].type<<" operand[1] type = "<<ud_obj.operand[1].type<<endl;
+      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__;
+      cout<<" mnenomic = "<<ud_obj.mnemonic<<endl;
+      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__;
+      cout<<" operand[0] type = "<<ud_obj.operand[0].type;
+      cout<<" operand[1] type = "<<ud_obj.operand[1].type<<endl;
 #endif
-      push2q(ud_obj.mnemonic, ud_obj.operand[1].base, ud_obj.operand[0].base, UD_NONE, UD_NONE, REG);
+      push2q(ud_obj.mnemonic, ud_obj.operand[1].base, ud_obj.operand[0].base,
+             UD_NONE, UD_NONE, REG);
 #ifdef CPP_PRINT
-      cout<<"\n\n"<<__FILE__<<":"<<dec<<__LINE__<<" mnemonic = "<<ud_obj.mnemonic<<" reg1 = "<<ud_obj.operand[0].base<<" reg2 = "<<ud_obj.operand[1].base<<hex<<" address = "<<addr_q.front()<<endl; 
+      cout<<"\n\n"<<__FILE__<<":"<<dec<<__LINE__<<" mnemonic = ";
+      cout<<ud_obj.mnemonic<<" reg1 = "<<ud_obj.operand[0].base<<" reg2 = ";
+      cout<<ud_obj.operand[1].base<<hex<<" address = "<<addr_q.front()<<endl; 
 #endif
       addr_q.pop();
       size_bytes.pop();
@@ -211,75 +222,99 @@ void Decoder::crack_opcodes(queue<ud_t> opcodes)
     // jmp immed_val      
     else if (ud_obj.operand[0].type == UD_OP_JIMM) {                                      
 #ifdef CPP_PRINT
-      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__<<" mnenomic = "<<ud_obj.mnemonic<<endl;
+      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__<<" mnenomic = ";
+      cout<<ud_obj.mnemonic<<endl;
 #endif
-      push2q(ud_obj.mnemonic, UD_NONE, UD_NONE, UD_NONE, sign_extend(ud_obj.operand[0].lval.uqword, ud_obj.operand[0].size), IMMED);
+      push2q(ud_obj.mnemonic, UD_NONE, UD_NONE, UD_NONE, 
+             sign_extend(ud_obj.operand[0].lval.uqword, ud_obj.operand[0].size),
+             IMMED);
       addr_q.pop();
       size_bytes.pop();
       continue;
     }
 
     // callq, push etc
-    else if (ud_obj.operand[1].type == UD_NONE && ud_obj.operand[0].type != UD_OP_MEM) {    
+    else if ((ud_obj.operand[1].type == UD_NONE)\
+             && (ud_obj.operand[0].type != UD_OP_MEM)) {    
 #ifdef CPP_PRINT
-      cout<<"\n\n"<<__FILE__<<": "<<dec<<__LINE__<<" mnemonic: "<<ud_obj.mnemonic<<endl;
+      cout<<"\n\n"<<__FILE__<<": "<<dec<<__LINE__<<" mnemonic: ";
+      cout<<ud_obj.mnemonic<<endl;
 #endif
       if (ud_obj.mnemonic == UD_Ipop )    
-        push2q(ud_obj.mnemonic, UD_NONE, ud_obj.operand[0].base, UD_NONE, UD_NONE, REG);
+        push2q(ud_obj.mnemonic, UD_NONE, ud_obj.operand[0].base,
+               UD_NONE, UD_NONE, REG);
       else
-        push2q(ud_obj.mnemonic, ud_obj.operand[0].base, UD_NONE, UD_NONE, UD_NONE, REG);
+        push2q(ud_obj.mnemonic, ud_obj.operand[0].base, UD_NONE, UD_NONE,
+               UD_NONE, REG);
       addr_q.pop();
       size_bytes.pop();
       continue;
     }
 
     // sar(l) with one operand
-    else if (ud_obj.operand[0].type == UD_OP_REG && ud_obj.operand[1].type == UD_OP_CONST) {
+    else if ((ud_obj.operand[0].type == UD_OP_REG)\
+             && (ud_obj.operand[1].type == UD_OP_CONST)) {
 #ifdef CPP_PRINT
-      cout<<"\n\n"<<__FILE__<<": "<<dec<<__LINE__<<" mnemonic: "<<ud_obj.mnemonic<<endl;
+      cout<<"\n\n"<<__FILE__<<": "<<dec<<__LINE__<<" mnemonic: ";
+      cout<<ud_obj.mnemonic<<endl;
 #endif
-      push2q(ud_obj.mnemonic, UD_NONE, ud_obj.operand[0].base, UD_NONE, 0x1, IMMED);
+      push2q(ud_obj.mnemonic, UD_NONE, ud_obj.operand[0].base, UD_NONE,
+             1, IMMED);
       addr_q.pop();
       size_bytes.pop();
     }
 
     // immed to reg
-    else if (ud_obj.operand[1].type == UD_OP_IMM && ud_obj.operand[0].type == UD_OP_REG) { 
+    else if ((ud_obj.operand[1].type == UD_OP_IMM)\
+             && (ud_obj.operand[0].type == UD_OP_REG)) { 
 #ifdef CPP_PRINT
-      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__<<" mnenomic = "<<ud_obj.mnemonic<<endl;
+      cout<<"\n\n"<<__FILE__<<" : "<<dec<<__LINE__;
+      cout<<" mnenomic = "<<ud_obj.mnemonic<<endl;
 #endif
-      push2q(ud_obj.mnemonic, UD_NONE, ud_obj.operand[0].base, UD_NONE, sign_extend(ud_obj.operand[1].lval.uqword, ud_obj.operand[1].size), IMMED);
+      push2q(ud_obj.mnemonic, UD_NONE, ud_obj.operand[0].base, UD_NONE,
+             sign_extend(ud_obj.operand[1].lval.uqword, 
+                         ud_obj.operand[1].size), IMMED);
       addr_q.pop();
       size_bytes.pop();
       continue;
     }
 
     // reg with displacement
-    else if (ud_obj.operand[1].type == UD_OP_MEM || ud_obj.operand[0].type == UD_OP_MEM) {          
+    else if ((ud_obj.operand[1].type == UD_OP_MEM)\
+             || (ud_obj.operand[0].type == UD_OP_MEM)) {          
+      
       i = (ud_obj.operand[0].type == UD_OP_MEM) ? 0: 1;  
       j = (i + 1) % 2;
       
-      // cout<<"\n\n"<<__FILE__<<": i = "<<i<<endl;
-      load_o_store = ((ud_obj.mnemonic == UD_Ilea) ? UD_Ilea : ((i == 0) ? UD_Istore : UD_Iload));
+      load_o_store = ((ud_obj.mnemonic == UD_Ilea)\
+                      ? UD_Ilea\
+                      : ((i == 0)               \
+                         ? UD_Istore                    \
+                         : UD_Iload));
       if (ud_obj.operand[1].type == UD_NONE)
         load_o_store = UD_Iload;
 
 #ifdef CPP_PRINT
-        cout<<"\n"<<__FILE__<<":"<<dec<<__LINE__<<": mnemonic = "<<dec<<ud_obj.mnemonic<<endl;
-        cout<<"\n\n"<<__FILE__<<":"<<dec<<__LINE__<<": operand_i_index = "<<(int)ud_obj.operand[i].index<<endl;
+      cout<<"\n"<<__FILE__<<":"<<dec<<__LINE__<<": mnemonic = ";
+      cout<<dec<<ud_obj.mnemonic<<endl;
+      cout<<"\n\n"<<__FILE__<<":"<<dec<<__LINE__<<": operand_i_index = ";
+      cout<<(int)ud_obj.operand[i].index<<endl;
 #endif
 
       // opcode immed(src_reg), dst_reg
-      // if ((int)ud_obj.operand[i].scale == 0) {
       if (ud_obj.operand[i].index == UD_NONE) {
 #ifdef CPP_PRINT
-        cout<<"\n"<<__FILE__<<":"<<dec<<__LINE__<<": mnemonic = "<<dec<<ud_obj.mnemonic<<endl;
-        cout<<"\n\n"<<__FILE__<<":"<<dec<<__LINE__<<": operand_i_scale = "<<(int)ud_obj.operand[i].scale<<endl;
+        cout<<"\n"<<__FILE__<<":"<<dec<<__LINE__<<": mnemonic = ";
+        cout<<dec<<ud_obj.mnemonic<<endl;
+        cout<<"\n\n"<<__FILE__<<":"<<dec<<__LINE__<<": operand_i_scale = ";
+        cout<<(int)ud_obj.operand[i].scale<<endl;
 #endif
-        offset = sign_extend(ud_obj.operand[i].lval.uqword, (int)ud_obj.operand[i].offset);
+        offset = sign_extend(ud_obj.operand[i].lval.uqword, 
+                             (int)ud_obj.operand[i].offset);
         
         // Copy over the value to a scratch_reg
-        push2q(UD_Imov, ud_obj.operand[i].base, load_store_reg, UD_NONE, UD_NONE, REG);
+        push2q(UD_Imov, ud_obj.operand[i].base, load_store_reg, UD_NONE, 
+               UD_NONE, REG);
         // Add the sign extended offset      
         if (offset)
           push2q(UD_Iadd, UD_NONE, load_store_reg, UD_NONE, offset, IMMED);
@@ -288,39 +323,45 @@ void Decoder::crack_opcodes(queue<ud_t> opcodes)
         // Load in case of compare or test; no matter where the operands are
         if (ud_obj.mnemonic == UD_Icmp || ud_obj.mnemonic == UD_Itest) {
 #ifdef CPP_PRINT
-          cout<<"\n\n"<<__FILE__<<" :" <<dec<<__LINE__<<"\nud_obj.operand[0].base = "<<ud_obj.operand[0].base<<endl;
+          cout<<"\n\n"<<__FILE__<<" :" <<dec<<__LINE__;
+          cout<<"\nud_obj.operand[0].base = "<<ud_obj.operand[0].base<<endl;
 #endif
           // load
           push2q(UD_Iload, load_store_reg, scratchregls, UD_NONE, UD_NONE, REG);
           // Actual op to do
           if (ud_obj.operand[j].base != UD_NONE)
-            push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[j].base, UD_NONE, UD_NONE, REG);
+            push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[j].base,
+                   UD_NONE, UD_NONE, REG);
           else
-            push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE, sign_extend(ud_obj.operand[j].lval.uqword, ud_obj.operand[j].size) , IMMED);
+            push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE, 
+                   sign_extend(ud_obj.operand[j].lval.uqword,
+                               ud_obj.operand[j].size) , IMMED);
           
         }
         else if (load_o_store == UD_Iload) {
           // load          
-          push2q(load_o_store, load_store_reg, scratchregls, UD_NONE, UD_NONE, REG);
+          push2q(load_o_store, load_store_reg, scratchregls, UD_NONE,
+                 UD_NONE, REG);
           // Actual op to do
-          push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[0].base, UD_NONE, UD_NONE, REG);
+          push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[0].base, 
+                 UD_NONE, UD_NONE, REG);
         }
         
         else if (load_o_store == UD_Istore)  {
           // Actual op to do
-          push2q(ud_obj.mnemonic, ud_obj.operand[1].base, scratchregls, UD_NONE, UD_NONE, REG);
+          push2q(ud_obj.mnemonic, ud_obj.operand[1].base, scratchregls, UD_NONE, 
+                 UD_NONE, REG);
           // store 
-          push2q(load_o_store, scratchregls, load_store_reg, UD_NONE, UD_NONE, REG);
+          push2q(load_o_store, scratchregls, load_store_reg, UD_NONE, UD_NONE,
+                 REG);
 
         }
 
         else {                         
           // lea no need to load values
-          push2q(UD_Imov, load_store_reg, ud_obj.operand[0].base, UD_NONE, UD_NONE, REG);
+          push2q(UD_Imov, load_store_reg, ud_obj.operand[0].base, UD_NONE, 
+                 UD_NONE, REG);
         }
-
-        // Restore the value of offset added to the register
-        // push2q(UD_Isub, UD_NONE, ud_obj.operand[i].base, UD_NONE, offset, IMMED);
 
         size_bytes.pop();
         addr_q.pop();
@@ -330,67 +371,76 @@ void Decoder::crack_opcodes(queue<ud_t> opcodes)
       // immed(base, index, scale), dest
       else if (ud_obj.operand[i].index != UD_NONE) {                        
 #ifdef CPP_PRINT
-        cout<<"\n"<<__FILE__<<":"<<dec<<__LINE__<<": mnemonic = "<<dec<<ud_obj.mnemonic<<endl;
-        cout<<"\n\n"<<__FILE__<<":"<<dec<<__LINE__<<"\nMnemonic and cmp: "<<(ud_obj.mnemonic == UD_Icmp)<<endl;
+        cout<<"\n"<<__FILE__<<":"<<dec<<__LINE__<<": mnemonic = ";
+        cout<<dec<<ud_obj.mnemonic<<endl;
+        cout<<"\n\n"<<__FILE__<<":"<<dec<<__LINE__<<"\nMnemonic and cmp: ";
+        cout<<(ud_obj.mnemonic == UD_Icmp)<<endl;
 #endif
-        // if ((int)ud_obj.operand[i].scale == 0)
-        //   ud_obj.operand[i].scale = (uint8_t)1;
-
-        if (ud_obj.operand[i].base == ud_obj.operand[i].index) {      // base == index; so base *= (scale + 1)
+        // base == index; so base *= (scale + 1)
+        if (ud_obj.operand[i].base == ud_obj.operand[i].index) {    
 
           // Move the base register to a scratch register
-          push2q(UD_Imov, ud_obj.operand[i].base, load_store_reg, UD_NONE, UD_NONE, REG);
+          push2q(UD_Imov, ud_obj.operand[i].base, load_store_reg, UD_NONE,
+                 UD_NONE, REG);
           // base = base * scale + 1
           if ((int)ud_obj.operand[i].scale != 0)
-            push2q(UD_Iimul, UD_NONE, load_store_reg, UD_NONE, (int)ud_obj.operand[i].scale + 1, LOADMUL);
+            push2q(UD_Iimul, UD_NONE, load_store_reg, UD_NONE, 
+                   (int)ud_obj.operand[i].scale + 1, LOADMUL);
 
           // if (offset) base = base + offset
           if ((int)ud_obj.operand[i].offset) {
-            offset = sign_extend(ud_obj.operand[i].lval.uqword, (int)ud_obj.operand[i].offset);
+            offset = sign_extend(ud_obj.operand[i].lval.uqword, 
+                                 (int)ud_obj.operand[i].offset);
             push2q(UD_Iadd, UD_NONE, load_store_reg, UD_NONE, offset, IMMED);
           }
           
           // Do the actual op we're meant to
           if (ud_obj.mnemonic == UD_Ilea)
-            push2q(UD_Imov, load_store_reg, ud_obj.operand[0].base, UD_NONE, UD_NONE, REG);
+            push2q(UD_Imov, load_store_reg, ud_obj.operand[0].base, UD_NONE, 
+                   UD_NONE, REG);
 
           else if (ud_obj.mnemonic == UD_Icmp || ud_obj.mnemonic == UD_Itest) {
-            push2q(UD_Iload, load_store_reg, scratchregls, UD_NONE, UD_NONE, REG);
+            push2q(UD_Iload, load_store_reg, scratchregls, UD_NONE, UD_NONE, 
+                   REG);
             if (ud_obj.operand[j].base != UD_NONE)
-              push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[j].base, UD_NONE, UD_NONE, REG);
+              push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[j].base, 
+                     UD_NONE, UD_NONE, REG);
             else
-              push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE, sign_extend(ud_obj.operand[j].lval.uqword, ud_obj.operand[j].size), IMMED);
+              push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE, 
+                     sign_extend(ud_obj.operand[j].lval.uqword,
+                                 ud_obj.operand[j].size), IMMED);
           }
 
           else {
             if (load_o_store == UD_Iload) {
-              push2q(UD_Iload, load_store_reg, scratchregls, UD_NONE, UD_NONE, REG);
-              push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[0].base, UD_NONE, UD_NONE, REG);
+              push2q(UD_Iload, load_store_reg, scratchregls, UD_NONE, 
+                     UD_NONE, REG);
+              push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[0].base, 
+                     UD_NONE, UD_NONE, REG);
             }
             else {
               if (ud_obj.operand[j].base != UD_NONE)
-                push2q(ud_obj.mnemonic, ud_obj.operand[j].base, scratchregls, UD_NONE, UD_NONE, REG);
+                push2q(ud_obj.mnemonic, ud_obj.operand[j].base, scratchregls,
+                       UD_NONE, UD_NONE, REG);
               else
-                push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE, sign_extend(ud_obj.operand[j].lval.uqword, ud_obj.operand[j].size), IMMED);
-              push2q(load_o_store, scratchregls, load_store_reg, UD_NONE, UD_NONE, REG);
+                push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE, 
+                       sign_extend(ud_obj.operand[j].lval.uqword,
+                                   ud_obj.operand[j].size), IMMED);
+              push2q(load_o_store, scratchregls, load_store_reg, UD_NONE,
+                     UD_NONE, REG);
             }
           }
-
-          // // if (offset) base = base - offset
-          // if ((int)ud_obj.operand[i].offset) {
-          //   push2q(UD_Isub, UD_NONE, ud_obj.operand[i].base, UD_NONE, offset, IMMED);
-          // }
-
-          // // base = base / scale
-          // push2q(UD_Idiv, UD_NONE, ud_obj.operand[i].base, UD_NONE, (int)ud_obj.operand[i].scale + 1, IMMED);
         }
-        else {                                                   // base = base + index * scale
+        
+        // base = base + index * scale
+        else {                                                  
           // Move the value of the index register to a scratch register
-          push2q(UD_Imov, ud_obj.operand[i].index, load_store_reg, UD_NONE, UD_NONE, REG);
+          push2q(UD_Imov, ud_obj.operand[i].index, load_store_reg, 
+                 UD_NONE, UD_NONE, REG);
           // index = scale * index
-          // push2q(UD_Imul, UD_NONE, ud_obj.operand[i].index, UD_NONE, (int)ud_obj.operand[i].scale, IMMED);
           if ((int)ud_obj.operand[i].scale != 0)
-            push2q(UD_Iimul, UD_NONE, load_store_reg, UD_NONE, (int)ud_obj.operand[i].scale, LOADMUL);
+            push2q(UD_Iimul, UD_NONE, load_store_reg, UD_NONE, 
+                   (int)ud_obj.operand[i].scale, LOADMUL);
 
           bool base_present;
           if (ud_obj.operand[i].base == UD_NONE)
@@ -400,40 +450,52 @@ void Decoder::crack_opcodes(queue<ud_t> opcodes)
 
           // base = base + index
           if (base_present)
-            push2q(UD_Iadd, ud_obj.operand[i].base, load_store_reg, UD_NONE, UD_NONE, REG);
+            push2q(UD_Iadd, ud_obj.operand[i].base, load_store_reg,
+                   UD_NONE, UD_NONE, REG);
 
           // if (offset) base = base + offset
           if ((int)ud_obj.operand[i].offset) {
-            offset = sign_extend(ud_obj.operand[i].lval.uqword, (int)ud_obj.operand[i].offset);
+            offset = sign_extend(ud_obj.operand[i].lval.uqword, 
+                                 (int)ud_obj.operand[i].offset);
             push2q(UD_Iadd, UD_NONE, load_store_reg, UD_NONE, offset, IMMED);
           }
           
           // Do the actual op we were meant to
           // lea
           if (ud_obj.mnemonic == UD_Ilea)
-            push2q(UD_Imov, load_store_reg, ud_obj.operand[j].base, UD_NONE, UD_NONE, REG);
+            push2q(UD_Imov, load_store_reg, ud_obj.operand[j].base, UD_NONE, 
+                   UD_NONE, REG);
 
           // cmp || test
           else if (ud_obj.mnemonic == UD_Icmp || ud_obj.mnemonic == UD_Itest) {
-            // cout<<"\n\n"<<__FILE__<<" : "<<__LINE__<<" operand[j].base = "<<ud_obj.operand[j].base<<" operand[i].base = "<<ud_obj.operand[i].base<<endl;
-            push2q(UD_Iload, load_store_reg, scratchregls, UD_NONE, UD_NONE, REG);
+            push2q(UD_Iload, load_store_reg, scratchregls, UD_NONE, UD_NONE, 
+                   REG);
             if (ud_obj.operand[j].base != UD_NONE)
-              push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[j].base, UD_NONE, UD_NONE, REG);
+              push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[j].base, 
+                     UD_NONE, UD_NONE, REG);
             else
-              push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE, sign_extend(ud_obj.operand[j].lval.uqword, ud_obj.operand[j].size), IMMED);
+              push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE,
+                     sign_extend(ud_obj.operand[j].lval.uqword,
+                                 ud_obj.operand[j].size), IMMED);
           }
 
           else {
             if (load_o_store == UD_Iload) {
-              push2q(load_o_store, load_store_reg, scratchregls, UD_NONE, UD_NONE, REG);
-              push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[0].base, UD_NONE, UD_NONE, REG);
+              push2q(load_o_store, load_store_reg, scratchregls, UD_NONE, 
+                     UD_NONE, REG);
+              push2q(ud_obj.mnemonic, scratchregls, ud_obj.operand[0].base, 
+                     UD_NONE, UD_NONE, REG);
             }
             else {
               if (ud_obj.operand[j].base != UD_NONE)
-                push2q(ud_obj.mnemonic, ud_obj.operand[j].base, scratchregls, UD_NONE, UD_NONE, REG);
+                push2q(ud_obj.mnemonic, ud_obj.operand[j].base, scratchregls,
+                       UD_NONE, UD_NONE, REG);
               else
-                push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE, sign_extend(ud_obj.operand[j].lval.uqword, ud_obj.operand[j].size), IMMED);
-              push2q(load_o_store, scratchregls, load_store_reg, UD_NONE, UD_NONE, REG);
+                push2q(ud_obj.mnemonic, UD_NONE, scratchregls, UD_NONE,
+                       sign_extend(ud_obj.operand[j].lval.uqword,
+                                   ud_obj.operand[j].size), IMMED);
+              push2q(load_o_store, scratchregls, load_store_reg, UD_NONE, 
+                     UD_NONE, REG);
             }
           }
         }
@@ -445,7 +507,8 @@ void Decoder::crack_opcodes(queue<ud_t> opcodes)
   }
 }
 
-void Decoder::build_byte_stack(string bit_stream)
+void 
+Decoder::build_byte_stack(string bit_stream)
 {
   string scratch;
   int i;
@@ -457,7 +520,8 @@ void Decoder::build_byte_stack(string bit_stream)
 
 }
 
-void Decoder::decode_opcodes(sc_bv<128> inData)
+void 
+Decoder::decode_opcodes(sc_bv<128> inData)
 {
   string bit_stream, scratch;
   ud_t ud_obj;
@@ -471,7 +535,8 @@ void Decoder::decode_opcodes(sc_bv<128> inData)
   sc_addr temp_addr;
 
 #ifdef DEBUG
-    unsigned long long test_not_null = inData.to_uint();       // Will overflow, but doesn't matter
+  // Will overflow, but doesn't matter
+  unsigned long long test_not_null = inData.to_uint();       
   if (!test_not_null)
     die_counter++;
 
@@ -496,8 +561,6 @@ void Decoder::decode_opcodes(sc_bv<128> inData)
   ud_set_syntax(&ud_obj, UD_SYN_ATT);
   
   bit_stream = bin2hex(inData.to_string());
-  // cout<<"\n\n"<<__FILE__<<": Original bit_stream = "<<bit_stream<<endl;
-  // cout<<"\n"<<__FILE__<<": rem_string = "<<rem_string<<endl;
 
   if (first_run) {
     while (bit_stream[0] == '0' || bit_stream[0] == ' ') {
@@ -511,7 +574,6 @@ void Decoder::decode_opcodes(sc_bv<128> inData)
     first_run = false;
   }
 
-  // cout<<"\n\n"<<__FILE__<<": pos: "<<pos<<endl;
   if (!rem_string.empty() && !RIP_jump) {
     if (pos) {
       bit_stream.insert(pos, rem_string);         
@@ -530,8 +592,6 @@ void Decoder::decode_opcodes(sc_bv<128> inData)
       ctr++;
     }
     temp_addr += pos;
-    // cout<<"\n\n"<<__FILE__<<": temp_addr = "<<hex<<temp_addr<<dec<<endl;
-    // cout<<"\n\n"<<__FILE__<<": RIP_jump:  bit_stream = "<<bit_stream<<endl;
     RIP_jump = false;
   }
 
@@ -543,9 +603,9 @@ void Decoder::decode_opcodes(sc_bv<128> inData)
   Decoder::byte_stream = bit_stream;
   Decoder::stream_len = bit_stream.length();
 
-  #ifdef PRINT_DEBUG
+#ifdef PRINT_DEBUG
   cout<<"\n"<<__FILE__<<": bit_stream = "<<bit_stream<<endl;
-  #endif
+#endif
 
   buf = (uint8_t *)bit_stream.c_str();
   ud_set_input_buffer(&ud_obj, buf, stream_len);
@@ -569,17 +629,13 @@ void Decoder::decode_opcodes(sc_bv<128> inData)
         scratch_q.pop();
       }
       last_good_addr = temp_addr;
-      // cout<<"\n"<<__FILE__<<": last_good_addr = "<<last_good_addr<<"\ttemp_addr = "<<temp_addr<<endl;
-      // cout<<"\n"<<__FILE__<<": rem_string = "<<rem_string<<endl;
       continue;
     }
-    // cout<<"\n\n"<<__FILE__<<": ASM: "<<ud_insn_asm(&ud_obj);
+
     size_bytes.push(decoded_bytes);
     addr_q.push(temp_addr);
-    // cout<<"\n"<<__FILE__<<": temp_addr: "<<hex<<temp_addr.to_ulong()<<dec<<endl;
     temp_addr += decoded_bytes;
     last_good_addr = temp_addr;
-    // cout<<"\n"<<__FILE__<<": Decode temp_addr: "<<hex<<temp_addr<<endl;
 
     while (decoded_bytes) {
       if (!scratch_q.empty())
@@ -597,7 +653,8 @@ void Decoder::decode_opcodes(sc_bv<128> inData)
   
 }
 
-void Decoder::work() 
+void 
+Decoder::work() 
 {
   if (reset)
     return;
@@ -605,7 +662,8 @@ void Decoder::work()
   if (!in_ready)
     return;
 
-  if (clear) {                     // Make this more efficient later
+  // Make this more efficient later
+  if (clear) {                    
     return;
   }
  
@@ -614,13 +672,15 @@ void Decoder::work()
   out_ready = true;
 }
 
-void Decoder::do_reset()
+void 
+Decoder::do_reset()
 {
   if (reset)
     reset_flag = true;
 }
 
-void Decoder::print_uops(queue<uop> uop_list)
+void 
+Decoder::print_uops(queue<uop> uop_list)
 {
   queue<uop> scratch(uop_list);
   struct uop scratch_uop;
@@ -631,7 +691,7 @@ void Decoder::print_uops(queue<uop> uop_list)
     scratch_uop = uop_list.front();
     uop_list.pop();
 
-    if (scratch_uop.opcode == UD_Isyscall || scratch_uop.opcode == UD_Iret){
+    if (scratch_uop.opcode == UD_Isyscall || scratch_uop.opcode == UD_Iret) {
       cout<<"\nOpcode = "<<dec<<scratch_uop.opcode;
       cout<<"\nOpsize = "<<dec<<scratch_uop.opsize;
       cout<<"\nAddress = "<<hex<<scratch_uop.address;
@@ -676,5 +736,4 @@ void Decoder::print_uops(queue<uop> uop_list)
     cout<<"\nAddress = "<<hex<<scratch_uop.address;
     cout<<"\nSource = "<<scratch_uop.src<<endl;
   }
-  
 }

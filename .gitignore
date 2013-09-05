@@ -11,3 +11,7 @@ core-project/prog*/*.o
 HW/cache
 HW/KernMod/*.ko
 .sconsign.dblite
+core-project/cse502-cpu
+core-project/prog1/prog1
+core-project/prog2/prog2
+*.bc
